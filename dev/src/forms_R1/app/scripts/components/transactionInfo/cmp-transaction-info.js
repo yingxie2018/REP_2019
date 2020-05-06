@@ -437,6 +437,10 @@
             vm.isPriorityId = "is_priority" + scopeId;
             vm.isNocId = "is_noc" + scopeId;
         }
+
+        vm.updateProductProtocol = function () {
+            vm.transactionModel.ectd.productProtocol = "UNASSIGNED";
+        }
     }
 
 })
