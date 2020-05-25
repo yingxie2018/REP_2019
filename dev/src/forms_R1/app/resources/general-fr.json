@@ -95,5 +95,6 @@
   "D26": "fr_Clinical Trial",
   "BROWSER": "Navigateur",
   "TABLE_EXPANDED_STATE": "État ouvert",
-  "PROTECTED_B": "Protégé \"B\" une fois rempli"
+  "PROTECTED_B": "Protégé \"B\" une fois rempli",
+  "LETTER_6_NUMBERS": " (composé d’une lettre suivie de six chiffres)"
 }

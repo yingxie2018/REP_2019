@@ -339,7 +339,7 @@
                         angular.merge(resultsList, result);
                     }
                 }
-                i++;
+                // i++;
             }
         }
 

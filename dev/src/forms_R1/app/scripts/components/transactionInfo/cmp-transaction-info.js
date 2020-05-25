@@ -83,10 +83,10 @@
             {type: "required", displayAlias: "MSG_ERR_MAND"},
             {type: "minlength", displayAlias: "MSG_LENGTH_MIN5"}
         ];
-        vm.min7Error = [
+        vm.formatError = [
             {type: "required", displayAlias: "MSG_ERR_MAND"},
             {type: "minlength", displayAlias: "TYPE_MINLENGTH"},
-            {type: "pattern", displayAlias: "MSG_FORMAT_ALPHA_NUMBERIC"}
+            {type: "pattern", displayAlias: "TYPE_PATTERN"}
         ];
         vm.showSummary=false;
 
