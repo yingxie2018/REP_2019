@@ -85,8 +85,8 @@
         ];
         vm.formatError = [
             {type: "required", displayAlias: "MSG_ERR_MAND"},
-            {type: "minlength", displayAlias: "TYPE_MINLENGTH"},
-            {type: "pattern", displayAlias: "TYPE_PATTERN"}
+            {type: "minlength", displayAlias: "FORMAT_TYPE_MINLENGTH"},
+            {type: "pattern", displayAlias: "FORMAT_TYPE_PATTERN"}
         ];
         vm.showSummary=false;
 

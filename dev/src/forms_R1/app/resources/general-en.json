@@ -39,7 +39,7 @@
   "SAVE_CONTACT":"Save Contact",
   "DELETE_CONTACT":"Delete Contact",
   "COMPANY_ID": "Company ID",
-  "DOSSIER_ID": "Dossier ID",
+  "DOSSIER_ID": "Dossier Identifier",
   "IMPORTER": "Importer",
   "IMPORTERID":"Importer Company ID",
   "IMPORTER_COMPANY_NAME": "Importer Company Name",
@@ -97,5 +97,7 @@
   "BROWSER": "Browser",
   "TABLE_EXPANDED_STATE": "Expanded State",
   "PROTECTED_B": "Protected \"B\" when completed",
-  "LETTER_6_NUMBERS": " (a lowercase letter followed by 6 numbers)"
+  "LETTER_6_NUMBERS": " (a lowercase letter followed by 6 numbers)",
+  "FORMAT_TYPE_MINLENGTH": "Incorrect format - less than minimum length",
+  "FORMAT_TYPE_PATTERN": "Incorrect format - must be lowercase letter followed by six numbers"
 }
