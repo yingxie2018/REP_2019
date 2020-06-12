@@ -126,6 +126,7 @@
                                   name="{{::transInfoCtrl.productProtocolId}}"
                                   data-ng-model="transInfoCtrl.transactionModel.ectd.productProtocol"
                                   class="form-control full-width" maxlength="30"
+                                  data-ng-readonly="transInfoCtrl.disablePtclNum"
                                   data-ng-change="transInfoCtrl.transactionModel.ectd.productProtocol=transInfoCtrl.transactionModel.ectd.productProtocol.toUpperCase()"
                                   required>
                                    </input>
@@ -340,11 +341,11 @@
                         <div class="panel-body">
                             <cmp-lifecycle-details lifecycle-record="transInfoCtrl.transactionModel.ectd.lifecycleRecord"
                                                    is-detail-valid=""
-                                                   update-product-protocol="transInfoCtrl.updateProductProtocol"
+                                                   update-product-protocol="transInfoCtrl.updateProductProtocol(value)"
                                                    is-ectd="transInfoCtrl.transactionModel.ectd.ectdValue"
                                                    dossier-type ="transInfoCtrl.transactionModel.ectd.dossierType"
-                                                   show-error-summary="transInfoCtrl.showSummary" is-file-loaded="transInfoCtrl.isFileLoaded"
-                                        >
+                                                   show-error-summary="transInfoCtrl.showSummary"
+                                                   is-file-loaded="transInfoCtrl.isFileLoaded">
                             </cmp-lifecycle-details>
                         </div>
                     </section>

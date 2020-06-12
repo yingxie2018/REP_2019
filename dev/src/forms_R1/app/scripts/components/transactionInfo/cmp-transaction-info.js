@@ -89,6 +89,7 @@
             {type: "pattern", displayAlias: "FORMAT_TYPE_PATTERN"}
         ];
         vm.showSummary=false;
+        vm.disablePtclNum = false;
 
         vm.$onInit = function () {
             _setIdNames();
@@ -232,6 +233,7 @@
                    vm.transactionModel.isFees = '';
                } else {
                    vm.transactionModel.ectd.productProtocol = '';
+                   vm.disablePtclNum = false;
                    if(vm.selectedDossierType === 'D24') {
                        vm.transactionModel.isPriority = '';
                        vm.transactionModel.isNoc = '';
@@ -438,8 +440,13 @@
             vm.isNocId = "is_noc" + scopeId;
         }
 
-        vm.updateProductProtocol = function () {
-            vm.transactionModel.ectd.productProtocol = "UNASSIGNED";
+        vm.updateProductProtocol = function (value) {
+            vm.disablePtclNum = value;
+            if (value) {
+                vm.transactionModel.ectd.productProtocol = "UNASSIGNED";
+            } else {
+                vm.transactionModel.ectd.productProtocol = "";
+            }
         }
     }
 
