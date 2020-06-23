@@ -23,6 +23,7 @@ var protractor = require("gulp-protractor").protractor;
 var baseScript = './app/scripts';
 var wetBase = './wet_4_0_27';
 var buildDev = './build/dev';
+var buildDevPilot = './build/dev-pilot';
 var buildProd = './build/prod/';
 var buildProdAbs = '/build/prod/';
 var templateFileEn = 'content-en.html';
@@ -40,14 +41,18 @@ var paths = {
     helpTemplates: 'app/help/',
     buildProd: buildProd,
     buildDev: buildDev,
+    buildDevPilot: buildDevPilot,
     buildDevDiff: buildDev + '/repDiff/',
     buildDevActivity: buildDev + '/activity/',
     buildDevCompany: buildDev + '/company/',
     buildDevTransaction: buildDev + '/transaction/',
-    buildDevDossier: buildDev + '/dossier/',
+    // buildDevDossier: buildDev + '/dossier/',
     buildDevDrugProduct: buildDev + '/drugProduct/',
     buildDevPIConverter: buildDev + '/converter/',
     buildDevCSP: buildDev + '/csp/',
+    buildDevPilotCompany: buildDevPilot + '/company/',
+    buildDevPilotTransaction: buildDevPilot + '/transaction/',
+    buildDevPilotDrugProduct: buildDevPilot + '/drugProduct/',
     buildProdActivity: buildProd + '/activity/',
     buildProdCompany: buildProd + '/company/',
     buildProdTransaction: buildProd + '/transaction/',
@@ -85,8 +90,10 @@ var homePath = {
     dev_fr: "https://lam-dev.hres.ca/rep-dev/index-fr.html",
     test_en: "https://lam-dev.hres.ca/rep_test/index.html",
     test_fr: "https://lam-dev.hres.ca/rep_test/index-fr.html",
-    prod_en: "https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/regulatory-enrolment-process.html",
-    prod_fr: "https://www.canada.ca/fr/sante-canada/services/medicaments-produits-sante/medicaments/demandes-presentations/lignes-directrices/processus-inscription-reglementaire.html",
+    prod_en: "https://health-products.canada.ca/rep-pir/index.html",
+    prod_fr: "https://health-products.canada.ca/rep-pir/index-fr.html",
+    // prod_en: "https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/regulatory-enrolment-process.html",
+    // prod_fr: "https://www.canada.ca/fr/sante-canada/services/medicaments-produits-sante/medicaments/demandes-presentations/lignes-directrices/processus-inscription-reglementaire.html",
     prodInt_en: "https://lam-dev.hres.ca/REP-Form-Internal/index.html",
     prodInt_fr: "https://lam-dev.hres.ca/REP-Form-Internal/index.html"
 
@@ -123,23 +130,23 @@ var activityRootTitles_fr = {
 };
 
 var companyRootTitles_en = {
-    mainHeading: "Company Template: Regulatory Enrolment Process (REP)",
+    mainHeading: "Company Template: Regulatory Enrolment Process (REP)<br>(Version 4.1.0)",
     title: 'Company Template: Regulatory Enrolment Process - Canada.ca'
 
 };
 var companyRootTitles_fr = {
-    mainHeading: "Modèle de l'entreprise: Processus d'Inscription Réglementaire",
+    mainHeading: "Modèle de l'entreprise: Processus d'Inscription Réglementaire (Version 4.1.0)",
     title: "Modèle de l'entreprise: Processus d'Inscription Réglementaire - Canada.ca"
 
 };
 
 var transactionRootTitles_en = {
-    mainHeading: "Regulatory Transaction Template: Regulatory Enrolment Process (REP)",
+    mainHeading: "Regulatory Transaction Template: Regulatory Enrolment Process (REP) (Version 4.1.0)",
     title: 'Regulatory Transaction Template: Regulatory Enrolment Process - Canada.ca'
 
 };
 var transactionRootTitles_fr = {
-    mainHeading: "Modèle de transaction réglementaire: Processus d'inscription réglementaire",
+    mainHeading: "Modèle de transaction réglementaire: Processus d'inscription réglementaire (Version 4.1.0)",
     title: 'Modèle de transaction réglementaire: Processus d\'inscription réglementaire - Canada.ca'
 
 };
@@ -157,13 +164,13 @@ var dossierRootTitles_fr = {
 };
 
 var drugProductRootTitles_en = {
-    mainHeading: "Product Information Template: Regulatory Enrolment Process (REP)",
+    mainHeading: "Product Information Template: Regulatory Enrolment Process (REP) (Version 4.1.0)",
     title: 'Product Information Template: Regulatory Enrolment Process - Canada.ca'
 
 };
 
 var drugProductRootTitles_fr = {
-    mainHeading: "Modèle d'information sur le produit: Processus d'inscription réglementaire",
+    mainHeading: "Modèle d'information sur le produit: Processus d'inscription réglementaire (Version 4.1.0)",
     title: "Modèle d'information sur le produit: Processus d'inscription réglementaire - Canada.ca"
 
 };
@@ -416,7 +423,8 @@ var companyComponentFolders =
         componentFolders.dossierIdDetails,
         componentFolders.errorSummary,
         componentFolders.errorMsg,
-        componentFolders.alertComp
+        componentFolders.alertComp,
+        componentFolders.companyHelpComp
     ];
 
 //Dossier Form Components
@@ -463,7 +471,8 @@ var drugProductComponentFolders =
         componentFolders.expandingTable,
         componentFolders.errorMsg,
         componentFolders.errorSummary,
-        componentFolders.alertComp
+        componentFolders.alertComp,
+        componentFolders.piHelpComp
     ];
 
 var piConverterComponentFolders =
@@ -489,7 +498,8 @@ var transactionComponentFolders = [
     componentFolders.alertComp,
     componentFolders.errorMsg,
     componentFolders.errorSummary,
-    componentFolders.transFees
+    componentFolders.transFees,
+    componentFolders.rtHelpComp
 ];
 //certificate of Supplementary Protection File
 
@@ -1040,7 +1050,6 @@ pipes.copyWet = function (destDirectory) {
     return (copySources.pipe(gulp.dest(destDirectory)))
 };
 
-
 pipes.generateRootJsFile = function (lang, type, rootFile, destPath, skipDate) {
 
     console.log("generating the root file");
@@ -1153,7 +1162,6 @@ pipes.createRootHtml = function (templatePath, valsObj, templateName, injectRoot
     )
 
 };
-
 
 pipes.cleanBuild = function (baseDir) {
 
@@ -1628,11 +1636,11 @@ gulp.task('dev-global-watch', function () {
 // });
 
 gulp.task('dev-company-clean', function () {
-    return (pipes.cleanBuild(paths.buildDevCompany + 'app/'));
+    return (pipes.cleanBuild(paths.buildDevCompany));
 
 });
 gulp.task('dev-transaction-clean', function () {
-    return (pipes.cleanBuild(paths.buildDevTransaction + 'app/'));
+    return (pipes.cleanBuild(paths.buildDevTransaction));
 
 });
 // gulp.task('dev-dossier-clean', function () {
@@ -1641,17 +1649,31 @@ gulp.task('dev-transaction-clean', function () {
 // });
 
 gulp.task('dev-drugProduct-clean', function () {
-    return (pipes.cleanBuild(paths.buildDevDrugProduct + 'app/'));
+    return (pipes.cleanBuild(paths.buildDevDrugProduct));
 
 });
 
 gulp.task('dev-piConverter-clean', function () {
-    return (pipes.cleanBuild(paths.buildDevPIConverter + 'app/'));
+    return (pipes.cleanBuild(paths.buildDevPIConverter));
 
 });
 
 gulp.task('dev-csp-clean', function () {
-    return (pipes.cleanBuild(paths.buildDevCSP + 'app/'));
+    return (pipes.cleanBuild(paths.buildDevCSP));
+
+});
+
+gulp.task('dev-company-pilot-clean', function () {
+    return (pipes.cleanBuild(paths.buildDevPilotCompany));
+
+});
+gulp.task('dev-transaction-pilot-clean', function () {
+    return (pipes.cleanBuild(paths.buildDevPilotTransaction));
+
+});
+
+gulp.task('dev-drugProduct-pilot-clean', function () {
+    return (pipes.cleanBuild(paths.buildDevPilotDrugProduct));
 
 });
 
@@ -1780,9 +1802,10 @@ gulp.task('dev-company-copyWet', function () {
     return (pipes.copyWet(paths.buildDevCompany))
 });
 
-gulp.task('dev-company-htmlBuild', gulp.series('dev-company-clean', 'dev-global-create-src-template', 'dev-company-copyData', 'dev-company-copySrc', 'dev-company-copyLib', 'dev-company-createRootJS', 'dev-company-createResources', function () {
+gulp.task('dev-company-htmlCreate', function () {
     var ignoreDir = '/build/dev/company';
     var buildDir = paths.buildDevCompany;
+    // console.log('buildDir: ' + buildDir);
     var htmlPartial = jsRootContent.partialCompanyRoot;
     var today = createSuffixDate();
     today = "";
@@ -1791,12 +1814,21 @@ gulp.task('dev-company-htmlBuild', gulp.series('dev-company-clean', 'dev-global-
     pipes.createRootHtml(paths.devFrenchTemplate, companyRootTitles_fr, 'companyEnrolEXT-fr.html', 'companyAppEXT-fr' + today + '.js', htmlPartial, buildDir, ignoreDir, 'fr', deploy);
     pipes.createRootHtml(paths.devEnglishTemplate, companyRootTitles_en, 'companyEnrolEXT-en.html', 'companyAppEXT-en' + today + '.js', htmlPartial, buildDir, ignoreDir, 'en', deploy);
     pipes.createRootHtml(paths.devEnglishTemplate, companyRootTitles_en, 'companyEnrolINT-en.html', 'companyAppINT-en' + today + '.js', htmlPartial, buildDir, ignoreDir, 'en', deploy);
+
     return (
         pipes.cleanBuild(buildDir + paths.translations)
 
     );
 
+});
 
+gulp.task('dev-company-htmlBuild', gulp.series('dev-company-pilot-clean', 'dev-company-clean', 'dev-global-create-src-template', 'dev-company-copyData', 'dev-company-copySrc', 'dev-company-copyLib', 'dev-company-createRootJS', 'dev-company-createResources', 'dev-company-htmlCreate', function () {
+    setTimeout(() => {
+        // console.log("pilot!");
+        var copySources = gulp.src([paths.buildDevCompany + '**/*'],
+            {read: true, base: paths.buildDevCompany});
+        return (copySources.pipe(gulp.dest(paths.buildDevPilotCompany)));
+    }, 2000);
 }));
 
 
@@ -1849,7 +1881,7 @@ gulp.task('dev-transaction-copyData', function () {
     return (copySources.pipe(gulp.dest(paths.buildDev)));
 });
 
-gulp.task('dev-transaction-htmlBuild', gulp.series('dev-transaction-clean', 'dev-global-create-src-template', 'dev-transaction-copyData', 'dev-transaction-copySrc', 'dev-transaction-copyLib', 'dev-transaction-createRootJs', 'dev-transaction-createResources', function () {
+gulp.task('dev-transaction-htmlCreate', function () {
     var ignoreDir = '/build/dev/transaction';
     var buildDir = paths.buildDevTransaction;
     var htmlPartial = jsRootContent.partialTransactionRoot;
@@ -1863,6 +1895,15 @@ gulp.task('dev-transaction-htmlBuild', gulp.series('dev-transaction-clean', 'dev
         pipes.cleanBuild(buildDir + paths.translations)
     );
 
+});
+
+gulp.task('dev-transaction-htmlBuild', gulp.series('dev-transaction-pilot-clean', 'dev-transaction-clean', 'dev-global-create-src-template', 'dev-transaction-copyData', 'dev-transaction-copySrc', 'dev-transaction-copyLib', 'dev-transaction-createRootJs', 'dev-transaction-createResources', 'dev-transaction-htmlCreate', function () {
+    setTimeout(() => {
+        // console.log("pilot!");
+        var copySources = gulp.src([paths.buildDevTransaction + '**/*'],
+            {read: true, base: paths.buildDevTransaction});
+    return (copySources.pipe(gulp.dest(paths.buildDevPilotTransaction)));
+}, 2000);
 }));
 
 /******** Dossier Related  tasks  *****************/
@@ -2001,7 +2042,7 @@ gulp.task('dev-drugProduct-createRootJS', function () {
  * Creates 4 html files- internal english, internal french, external english, external french
  */
 //' dev-dossier-insertTranslateLoader '
-gulp.task('dev-drugProduct-htmlBuild', gulp.series('dev-drugProduct-clean', 'dev-global-create-src-template', 'dev-drugProduct-copyData', 'dev-drugProduct-copySrc', 'dev-drugProduct-copyLib', 'dev-drugProduct-createRootJS', 'dev-drugProduct-createResources', function () {
+gulp.task('dev-drugProduct-htmlCreate', function () {
 
     var ignoreDir = '/build/dev/drugProduct';
     var buildDir = paths.buildDevDrugProduct;
@@ -2016,6 +2057,15 @@ gulp.task('dev-drugProduct-htmlBuild', gulp.series('dev-drugProduct-clean', 'dev
     return (
         pipes.cleanBuild(buildDir + paths.translations)
     );
+});
+
+gulp.task('dev-drugProduct-htmlBuild', gulp.series('dev-drugProduct-pilot-clean', 'dev-drugProduct-clean', 'dev-global-create-src-template', 'dev-drugProduct-copyData', 'dev-drugProduct-copySrc', 'dev-drugProduct-copyLib', 'dev-drugProduct-createRootJS', 'dev-drugProduct-createResources', 'dev-drugProduct-htmlCreate', function () {
+    setTimeout(() => {
+        // console.log("pilot!");
+        var copySources = gulp.src([paths.buildDevDrugProduct + '**/*'],
+            {read: true, base: paths.buildDevDrugProduct});
+    return (copySources.pipe(gulp.dest(paths.buildDevPilotDrugProduct)));
+}, 2000);
 }));
 
 // ******** dev piConverter tasks ******************

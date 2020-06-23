@@ -297,6 +297,7 @@
         var service = {
             getContactRoles: getRoleValuesArray,
             getFormTypes: _getFormTypes,
+            getFormTypesProd: _getFormTypesProd,
             getBiologicType: _getBiologic,
             getPharmaType: _getPharmaceutical,
             getVeterinary: _getVeterinary,
@@ -322,6 +323,14 @@
                     _pharma,
                     _veterinary,
                     _clinical
+                ]);
+        }
+
+        function _getFormTypesProd() {
+            return (
+                [
+                    _biologic,
+                    _pharma
                 ]);
         }
 
