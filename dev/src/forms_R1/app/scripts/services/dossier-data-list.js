@@ -41,6 +41,8 @@
         vm.unitsList = [];
         //TODO create getters/setters? safer as is
         var service = {
+            getEnv: _getEnvString,
+            setEnv: _setEnvString,
             setActiveList: _setActiveArray,
             setSpeciesList: _setSpeciesArray,
             setSubTypesList: _setSubTypesArray,
@@ -100,6 +102,14 @@
 
         };
         return service;
+
+        function _getEnvString(value) {
+            return vm.env;
+        }
+
+        function _setEnvString(value) {
+            vm.env = value.env;
+        }
 
         function _setActiveArray(data) {
             vm.activeList = data;

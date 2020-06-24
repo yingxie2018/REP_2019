@@ -53,10 +53,10 @@
             }
         });
 
-    drugProductCtrl.$inject = ['$scope', 'hpfbFileProcessing', 'ApplicationInfoService', 'DrugProductService', 'DossierLists', 'getRoleLists', 'YES','INTERNAL_TYPE','EXTERNAL_TYPE','APPROVED_TYPE','FRENCH','$translate','$anchorScroll','$location'];
+    drugProductCtrl.$inject = ['$scope', 'hpfbFileProcessing', 'ApplicationInfoService', 'DrugProductService', 'DossierLists', 'getRoleLists', 'YES', 'PROD', 'INTERNAL_TYPE','EXTERNAL_TYPE','APPROVED_TYPE','FRENCH','$translate','$anchorScroll','$location'];
 
 
-    function drugProductCtrl($scope, hpfbFileProcessing, ApplicationInfoService, DrugProductService, DossierLists, getRoleLists, YES,INTERNAL_TYPE,EXTERNAL_TYPE,APPROVED_TYPE,FRENCH,$translate, $anchorScroll,$location) {
+    function drugProductCtrl($scope, hpfbFileProcessing, ApplicationInfoService, DrugProductService, DossierLists, getRoleLists, YES, PROD, INTERNAL_TYPE,EXTERNAL_TYPE,APPROVED_TYPE,FRENCH,$translate, $anchorScroll,$location) {
 
         var vm = this;
         vm.showContent = _loadFileContent; //binds the component to the function
@@ -65,7 +65,8 @@
         vm.saveXMLLabel = "APPROVE_FINAL";
         vm.yesNoList = DossierLists.getYesNoList();
         vm.yesValue = YES; //is this needed?
-        vm.formTypeList = getRoleLists.getFormTypes();
+        vm.env = DossierLists.getEnv();
+        vm.formTypeList = (vm.env === PROD) ? getRoleLists.getFormTypesProd() : getRoleLists.getFormTypes();
         //config for applicationInfoCompoenent
        /* vm.configField = {
             "label": "DOSSIER_ID",
