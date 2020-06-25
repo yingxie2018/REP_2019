@@ -30,6 +30,7 @@
         var OTHER = "OTHER";
         var YES = 'Y';
         var vm = this;
+        vm.env = '';
         vm.roaList = [];
         vm.nanoList = [];
         vm.dosageFormList = [];
