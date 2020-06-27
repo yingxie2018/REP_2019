@@ -22,6 +22,7 @@
                 onUpdate: '&',
                 onDelete: '&',
                 showErrors:'<',
+                htIndxList:'<',
                 updateErrorSummary:'&'
             }
         });
@@ -70,7 +71,12 @@
             countryDisplay:"CAN",
             stateLov: "",
             stateText: "",
-            postalCode: ""
+            postalCode: "",
+            phone: "",
+            phoneExt: "",
+            fax: "",
+            email: "",
+            routingId: ""
         };
 
 

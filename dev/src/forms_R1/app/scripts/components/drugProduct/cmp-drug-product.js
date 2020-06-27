@@ -25,6 +25,7 @@
         'ngMessages',
         'ngAria',
         'drugProductService',
+        'productInfoHelpText',
         'ngSanitize',
         'errorSummaryModule',
         'errorMessageModule',
@@ -61,12 +62,14 @@
         var vm = this;
         vm.showContent = _loadFileContent; //binds the component to the function
         vm.applicationInfoService = new ApplicationInfoService();
+        vm.drugProductService = new DrugProductService();
         vm.userType = EXTERNAL_TYPE;
         vm.saveXMLLabel = "APPROVE_FINAL";
         vm.yesNoList = DossierLists.getYesNoList();
         vm.yesValue = YES; //is this needed?
-        vm.env = DossierLists.getEnv();
-        vm.formTypeList = (vm.env === PROD) ? getRoleLists.getFormTypesProd() : getRoleLists.getFormTypes();
+        vm.isForProd = PROD === DossierLists.getEnv();
+        vm.formTypeList = getRoleLists.getFormTypes(vm.isForProd);
+        vm.htIndxList = vm.drugProductService.helpTextSequences;
         //config for applicationInfoCompoenent
        /* vm.configField = {
             "label": "DOSSIER_ID",
@@ -150,7 +153,6 @@
             vm.drugUseList = vm.defaultDrugUseList;
             vm.disinfectantTypeList = DossierLists.getDisinfectantTypeList();
             _setIdNames();
-            vm.drugProductService = new DrugProductService();
             vm.model = vm.drugProductService.getDefaultObject();
             vm.rootTag= vm.drugProductService.getRootTagName();
             vm.setVisibleTabIndex=-1;

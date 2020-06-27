@@ -30,7 +30,9 @@
                 onUpdate: '&',
                 showErrors: '<',
                 isFocus: '<',
-                cancelFocus: '&'
+                cancelFocus: '&',
+                htIndxList:'<',
+                updateErrorSummary:'&'
             }
         });
 
@@ -53,7 +55,12 @@
             countryDisplay:"CAN",
             stateLov: "",
             stateText: "",
-            postalCode: ""
+            postalCode: "",
+            phone: "",
+            phoneExt: "",
+            fax: "",
+            email: "",
+            routingId: ""
         };
 
         vm.canadianPostalCodePattern = '^(?!.*[DFIOQU])[A-VXYa-vxy][0-9][A-Za-z] ?[0-9][A-Za-z][0-9]$';
@@ -62,6 +69,9 @@
         vm.updateSummary=0; //triggers and error summary update
         vm.countryList= getCountryAndProvinces.getCountries();
         vm.fdId="";
+        vm.phoneReg=/^([0-9]{10,25}$)/;
+        vm.faxReg=/^([0-9]{10,25}$)/;
+        vm.routingIdReg=/^([0-9A-Za-z-]*$)/;
         vm.requiredOnly = [{type: "required", displayAlias: "MSG_ERR_MAND"}];
         vm.postalErrorList = [{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "TYPE_PATTERN"}];
 
@@ -70,6 +80,10 @@
             {type: "required", displayAlias: "MSG_ERR_MAND"},
             {type: "minlength", displayAlias: "MSG_LENGTH_MIN5"}
         ];
+        vm.emailError=[{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "email", displayAlias: "MSG_ERR_EMAIL_FORMAT"}];
+        vm.phoneError=[{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "MSG_ERR_PHONE_FORMAT"}];
+        vm.faxError=[{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "MSG_ERR_FAX_FORMAT"}];
+        vm.routingIdError=[{type: "pattern", displayAlias: "MSG_ERR_PHONE_FORMAT"}];
 
         vm.$onInit = function(){
             vm.showDetailErrors=false;
@@ -259,6 +273,11 @@
             vm.stateTextId = "proveState" + scopeId;
             vm.stateListId = "province" + scopeId;
             vm.postalId = "postal" + scopeId;
+            vm.faxId="fax_number" + scopeId;
+            vm.phoneNumberId="phoneNumber" + scopeId;
+            vm.phoneExtId="phoneExt" + scopeId;
+            vm.contactEmailId="contactEmail" + scopeId;
+            vm.routingIdentifierId="routing_id" + scopeId;
         }
     }
 })();

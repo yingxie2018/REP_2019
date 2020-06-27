@@ -58,8 +58,8 @@
 
         });
 
-    formulationRecCtrl.$inject = ['DossierLists', '$translate', '$scope', 'FRENCH', 'OTHER'];
-    function formulationRecCtrl(DossierLists, $translate ,$scope, FRENCH, OTHER) {
+    formulationRecCtrl.$inject = ['DossierLists', '$translate', '$scope', 'FRENCH', 'OTHER', 'PROD'];
+    function formulationRecCtrl(DossierLists, $translate ,$scope, FRENCH, OTHER, PROD) {
 
         var vm = this;
         vm.noCountries="";
@@ -69,6 +69,7 @@
         vm.dosageFormList = DossierLists.getDosageFormList();
         vm.otherValue = DossierLists.getDosageOther();
         vm.yesNoList = DossierLists.getYesNoList();
+        vm.isForProd = PROD === DossierLists.getEnv();
         vm.updateSummary=0; //message to update the summary component
         vm.showSummary=false; //show the errror summary object
         vm.alerts = [false, false, false,false]; //for help boxes

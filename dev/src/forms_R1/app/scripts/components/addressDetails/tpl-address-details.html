@@ -43,7 +43,7 @@
                        value="adr.addressModel.countryHtml"
                        data-ng-disabled="!adr.isCountryEditable()"
                        data-ng-change="adr.countryChange()" data-ng-model-options="{ updateOn: 'blur' }" list="countryList" required
-                       class="form-control full-width"/>
+                       class="form-control "/>
                 <datalist id="countryList" >
                     <option data-ng-repeat="countryRecord in adr.countryList"
                             value="{{countryRecord[adr.lang]}}"
@@ -124,5 +124,4 @@
             </div>
         </div>
     </ng-form>
-
 </div>

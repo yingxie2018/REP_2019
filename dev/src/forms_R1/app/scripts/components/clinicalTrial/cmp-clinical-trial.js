@@ -1,4 +1,5 @@
 /**
+ * cmp-clinical-trail.js
  * Created by steve zhao on 9/10/2019.
  */
 

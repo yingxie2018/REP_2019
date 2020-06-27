@@ -50,6 +50,7 @@
         vm.isDossier = false;
         vm.isNumber=false;
         vm.isAmend = false;
+        vm.requiredOnly = [{type: "required", displayAlias: "MSG_ERR_MAND"}];
         vm.min6Error = [
             {type: "required", displayAlias: "MSG_ERR_MAND"},
             {type: "minlength", displayAlias: "MSG_LENGTH_MIN5"}

@@ -34,6 +34,41 @@
 
         function DrugProductService(formData) {
             //construction logic
+            this.helpTextSequences = {
+                loadFileIndx: 0,
+                prodInfoIndx: 0,
+                compIdIndx: 0,
+                dossiTypeIndx: 0,
+                prodNameIndx: 0,
+                proComNameIndx: 0,
+                dnfNocAddrIndx: 0,
+                importerIndx: 0,
+                routingIdIndx: 0,
+                drugUseIndx: 0,
+                dinIndx: 0,
+                pudIndx: 0,
+                formuIndx: 0,
+                formuDetailIndx: 0,
+                ingredIndx: 0,
+                ingNameIndx: 0,
+                variaNameIndx: 0,
+                purposeIndx: 0,
+                standardIndx: 0,
+                isNanoIndx: 0,
+                ahSourcedIndx: 0,
+                isMaterialIndx: 0,
+                contaTypeIndx: 0,
+                packSizeIndx: 0,
+                shelfLifeIndx: 0,
+                manuCntryIndx: 0,
+                haSIMIndx: 0,
+                genXmlIndx: 0
+            };
+
+            var keys = Object.keys(this.helpTextSequences);
+            for (var i = 0; i < keys.length; i++) {
+                this.helpTextSequences[keys[i]] = i + 1;
+            }
 
             angular.extend(this._default, formData);
         }
@@ -80,6 +115,7 @@
                     isRegulatedCDSA: false,
                     isNonPrescriptionDrug: false,
                     isScheduleA: false,
+                    isDrugAdmin: false,
                     scheduleAGroup: getDefaultSchedA(),
                    // therapeutic: [],
                   //  canRefProducts: [],//grid
@@ -194,6 +230,7 @@
                         isRegulatedCDSA: info.is_regulated_cdsa === 'Y',
                         isNonPrescriptionDrug: info.is_non_prescription_drug === 'Y',
                         isScheduleA: info.is_sched_a === 'Y',
+                        isDrugAdmin: info.is_drug_admin === 'Y',
                        // therapeutic: [],
                        // canRefProducts: getCanRefProductList(info.ref_product_list.cdn_ref_product),//grid
                         propIndication: info.proposed_indication,
@@ -322,6 +359,7 @@
             baseModel.is_regulated_cdsa = jsonObj.drugProduct.isRegulatedCDSA === true ? 'Y' : 'N';
             baseModel.is_non_prescription_drug = jsonObj.drugProduct.isNonPrescriptionDrug === true ? 'Y' : 'N';
             baseModel.is_sched_a = jsonObj.drugProduct.isScheduleA === true ? 'Y' : 'N';
+            baseModel.is_drug_admin = jsonObj.drugProduct.isDrugAdmin === true ? 'Y' : 'N';
 
             baseModel.proposed_indication = jsonObj.drugProduct.propIndication;
 
@@ -515,7 +553,7 @@
                 }
                 for (var i = 0; i < info.length; i++) {
                     var ing = {};
-                    ing.id = info[i].ingredient_id;
+                    ing.id = Number(info[i].ingredient_id);
                     ing.ingredientName = info[i].ingredient_name;
                     ing.humanSourced = info[i].human_sourced === 'Y';
                     ing.animalSourced = info[i].animal_sourced === 'Y';
@@ -979,6 +1017,11 @@
                     record.countryDisplay = record.country.id;
                 }
                 record.postalCode = jsonObj[i].postal_code;
+                record.phone = jsonObj[i].phone_num;
+                record.phoneExt = jsonObj[i].phone_ext;
+                record.fax = jsonObj[i].fax_num;
+                record.email = jsonObj[i].email;
+                record.routingId = jsonObj[i].RoutingID;
                 importerRecord.push(record);
             }
             return importerRecord;
@@ -1012,6 +1055,11 @@
                     };
                 }
                 importerRec.postal_code = importerObj.postalCode;
+                importerRec.phone_num = importerObj.phone;
+                importerRec.phone_ext = importerObj.phoneExt;
+                importerRec.fax_num = importerObj.fax;
+                importerRec.email = importerObj.email;
+                importerRec.RoutingID = importerObj.routingId; //use RoutingID to meet docbridge automation requirement
             }
             return (importerRec);
         }
@@ -1246,7 +1294,7 @@
                 }
                 obj.country_group = {};
                 if (item.countryList && item.countryList.length > 0) {
-                    obj.country_group.country_manufacturer = countryListToOutput(item.countryList, currentLang);
+                    obj.country_group.country_manufacturer = formulationCountryListToOutput(item.countryList, currentLang);
                 }
                 if (item.activeIngList && item.activeIngList.length > 0) {
                     obj.formulation_ingredient = activeListToOutput(item.activeIngList);
@@ -1266,7 +1314,7 @@
                         obj.din = item.din;
                     }
                     if(item.dinCountryList.length > 0){
-                        obj.din_country_list = countryListToOutput(item.dinCountryList, currentLang);;
+                        obj.din_country_list = formulationCountryListToOutput(item.dinCountryList, currentLang);;
                     }
                 }
                 formulationList.push(obj);
@@ -1482,7 +1530,7 @@
          * @param list
          * @returns {Array}
          */
-        function countryListToOutput(list, lang) {
+        function formulationCountryListToOutput(list, lang) {
 
             var resultList = [];
             angular.forEach(list, function (item) {
