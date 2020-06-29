@@ -340,7 +340,10 @@ var componentFolders = {
     alertComp: "alertComponent/",
     transFees: 'transactionFees/',
     piConverter: 'piConverter',
-    clinicalTrial: 'clinicalTrial/',
+    rtHelpComp: "transactionHelpText/",
+    companyHelpComp: "companyHelpText/",
+    piHelpComp: "productInfoHelpText/",
+    clinicalTrial: "clinicalTrial/",
     speciesList: 'speciesList/',
     speciesRecord: 'speciesRecord/'
 };

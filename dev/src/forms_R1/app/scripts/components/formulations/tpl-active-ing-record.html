@@ -34,7 +34,7 @@
                                 class="field-name">{{'ING_NAME'|translate}}</span>
                             <strong class="required">{{'REQUIRED' |translate}}</strong>
                             <sup id="dr9c1_ref">
-                                <a class="fn-lnk" href="#dr9c1"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span> 14.2.1</a>
+                                <a class="fn-lnk" href="#dr9c1"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span>{{::ingRecCtrl.htIndxList.ingNameIndx}}</a>
                             </sup>
                             <cmp-error-message field-name="ingRecCtrl.ingredName"
                                                form-ref="ingRecCtrl.activeIngForm"
@@ -70,7 +70,7 @@
                         <label for="variant_{{::$id}}">
                             <span class="field-name">{{'VARIANT_NAME'|translate}}</span>
                             <sup id="dr9c2_ref">
-                                <a class="fn-lnk" href="#dr9c2"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span> 14.2.2</a>
+                                <a class="fn-lnk" href="#dr9c2"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span>{{::ingRecCtrl.htIndxList.variaNameIndx}}</a>
                             </sup>
                             <input type="text" id="variant_{{::$id}}" data-ng-model="ingRecCtrl.ingModel.variant" maxlength="60"
                                    data-ng-model-options="{ debounce: '$inherit'}" size="60"
@@ -83,7 +83,7 @@
                             <span class="field-name">{{'PURPOSE'|translate}}</span>
                             <strong class="required">{{"REQUIRED" |translate}}</strong>
                             <sup id="dr9c3_ref">
-                                <a class="fn-lnk" href="#dr9c3"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span> 14.2.3</a>
+                                <a class="fn-lnk" href="#dr9c3"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span>{{::ingRecCtrl.htIndxList.purposeIndx}}</a>
                             </sup>
                             <cmp-error-message field-name="ingRecCtrl.purposeId"
                                                form-ref="ingRecCtrl.activeIngForm"
@@ -124,7 +124,7 @@
                         <label for="{{::ingRecCtrl.standardId}}">
                             <span class="field-name">{{'STANDARD'|translate}}</span>
                             <sup id="dr9c4_ref">
-                                <a class="fn-lnk" href="#dr9c4"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span> 14.2.4</a>
+                                <a class="fn-lnk" href="#dr9c4"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span>{{::ingRecCtrl.htIndxList.standardIndx}}</a>
                             </sup>
                             <input type="text" id="{{::ingRecCtrl.standardId}}" data-ng-model="ingRecCtrl.ingModel.standard"
                                    data-ng-model-options="{ debounce: '$inherit'}"
@@ -197,7 +197,7 @@
                                                        form-ref="ingRecCtrl.activeIngForm"
                                                        show-error="ingRecCtrl.showError(ingRecCtrl.activeIngForm[ingRecCtrl.unitsId])"
                                                        error-types="ingRecCtrl.requiredOnly"></cmp-error-message>
-                                    <input type="list" id="{{::ingRecCtrl.unitsId}}" name="{{::ingRecCtrl.unitsId}}" data-ng-model="ingRecCtrl.ingModel.unitsHtml"
+                                    <input type="text" id="{{::ingRecCtrl.unitsId}}" name="{{::ingRecCtrl.unitsId}}" data-ng-model="ingRecCtrl.ingModel.unitsHtml"
                                            oninput="angular.element($(this)).scope().ingRecCtrl.unitsChange(this.value)" autocomplete="off"
                                            data-ng-blur="ingRecCtrl.unitsBlur()" list="unitsList" required="required" class="form-control"/>
                                     <datalist id="unitsList" class="rep-selectize-dropdown rep-selectize-font">
@@ -369,7 +369,7 @@
                             <span class="field-name">{{'IS_NANO_MATERIAL'|translate}}</span>
                             <strong class="required">{{"REQUIRED" |translate}}</strong>
                             <sup id="dr9c5_ref">
-                                <a class="fn-lnk" href="#dr9c5"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span> 14.2.5</a>
+                                <a class="fn-lnk" href="#dr9c5"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span>{{::ingRecCtrl.htIndxList.isNanoIndx}}</a>
                             </sup>
 
                             <cmp-error-message field-name="ingRecCtrl.isNanoMaterialId"
@@ -422,14 +422,14 @@
                 <div class="row">
                     <div class="form-group col-xs-12"
                          data-ng-class="{'has-error':ingRecCtrl.activeIngForm[ingRecCtrl.animalHumanSrcId].$invalid}">
-                        <label for="{{::ingRecCtrl.animalHumanSrcId}}" class="full-width required">
+                        <h4 class="full-width required">
                             <span class="field-name">{{'ANIMAL_HUMAN_SOURCED'|translate}}</span>
                             <strong class="required">{{"REQUIRED" |translate}}</strong>
                             <sup id="dr9c6_ref">
-                                <a class="fn-lnk" href="#dr9c6"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span> 14.2.6</a>
+                                <a class="fn-lnk" href="#dr9c6"><span class="wb-inv">{{::'INSTRUCTION'|translate}}</span>{{::ingRecCtrl.htIndxList.ahSourcedIndx}}</a>
                             </sup>
 
-                        </label>
+                        </h4>
                         <cmp-error-message field-name="ingRecCtrl.animalHumanSrcId"
                                            form-ref="ingRecCtrl.activeIngForm"
                                            show-error="ingRecCtrl.showError(ingRecCtrl.activeIngForm[ingRecCtrl.animalHumanSrcId])"
@@ -438,12 +438,12 @@
                                 <!--data-ng-required="true" class="form-control" name="{{::ingRecCtrl.animalHumanSrcId}}"-->
                                 <!--data-ng-options="val |translate for val in  ingRecCtrl.yesNoList">-->
                         <!--</select>-->
-                        <label class="col-xs-1" for="{{::ingRecCtrl.animalHumanSrcId}}"><input type="radio" id="{{::ingRecCtrl.animalHumanSrcId}}" name="{{::ingRecCtrl.animalHumanSrcId}}" value="Y" data-ng-model="ingRecCtrl.ingModel.humanAnimalSourced" required/>&nbsp;{{::'Y'|translate}}</label>
-                        <label class="col-xs-1" for="{{::ingRecCtrl.animalHumanSrcId}}_1"><input type="radio" id="{{::ingRecCtrl.animalHumanSrcId}}_1" name="{{::ingRecCtrl.animalHumanSrcId}}" value="N" data-ng-model="ingRecCtrl.ingModel.humanAnimalSourced" required/>&nbsp;{{::'N'|translate}}</label>
+                        <label class="col-xs-2" for="{{::ingRecCtrl.animalHumanSrcId}}"><input type="radio" id="{{::ingRecCtrl.animalHumanSrcId}}" name="{{::ingRecCtrl.animalHumanSrcId}}" value="Y" data-ng-model="ingRecCtrl.ingModel.humanAnimalSourced" required/>&nbsp;{{::'Y'|translate}}</label>
+                        <label class="col-xs-2" for="{{::ingRecCtrl.animalHumanSrcId}}_1"><input type="radio" id="{{::ingRecCtrl.animalHumanSrcId}}_1" name="{{::ingRecCtrl.animalHumanSrcId}}" value="N" data-ng-model="ingRecCtrl.ingModel.humanAnimalSourced" required/>&nbsp;{{::'N'|translate}}</label>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-xs-10">
+                    <div class="col-xs-11">
                         <div data-ng-if="ingRecCtrl.isAnimalHumanSourced()" class="alert alert-info"
                              role="alert" aria-live="polite">
                             {{'SOURCED_INFO'|translate}}

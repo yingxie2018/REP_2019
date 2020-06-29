@@ -30,7 +30,7 @@
         <header class="panel-heading clearfix">
             <h2 class="panel-title col-md-8">{{::'LOAD_DRUGPROD'|translate}}
                 <sup id="dr1_ref">
-                    <a class="fn-lnk" href="#dr1"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>1</a>
+                    <a class="fn-lnk" href="#dr1"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.loadFileIndx}}</a>
                 </sup>
             </h2>
         </header>
@@ -53,7 +53,7 @@
         <header class="panel-heading clearfix">
             <h2 class="panel-title col-md-8">{{::'DRUG_PRODUCT'|translate}}
                 <sup id="dr2_ref">
-                    <a class="fn-lnk" href="#dr2"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>2</a>
+                    <a class="fn-lnk" href="#dr2"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.prodInfoIndx}}</a>
                 </sup>
             </h2>
         </header>
@@ -64,7 +64,7 @@
                         <span class="field-name">1.&nbsp;{{::'COMPANY_ID' |translate}}{{::'LEAST_5_DIGIT' |translate}}</span>
                         <strong class="required">{{::"REQUIRED" |translate}}</strong>
                         <sup id="dr2a_ref">
-                            <a class="fn-lnk" href="#dr2a"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>3</a>
+                            <a class="fn-lnk" href="#dr2a"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.compIdIndx}}</a>
                         </sup>
                         <cmp-error-message field-name="drugProdCtrl.compId"
                                            form-ref="drugProdCtrl.drugProdForm"
@@ -105,7 +105,7 @@
                         <span class="field-name">3. {{::'DOSSIER_TYPE' |translate}}</span>
                         <strong class="required">{{::"REQUIRED" |translate}}</strong>
                         <sup id="dr2b_ref">
-                            <a class="fn-lnk" href="#dr2b"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>4</a>
+                            <a class="fn-lnk" href="#dr2b"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.dossiTypeIndx}}</a>
                         </sup>
                         <cmp-error-message field-name="drugProdCtrl.typeId"
                                            form-ref="drugProdCtrl.drugProdForm"
@@ -130,7 +130,7 @@
                         <span class="field-name">4.&nbsp;{{::'PROD_NAME' |translate}}</span>
                         <strong class="required">{{::"REQUIRED" |translate}}</strong>
                         <sup id="dr3_ref">
-                            <a class="fn-lnk" href="#dr3"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>5</a>
+                            <a class="fn-lnk" href="#dr3"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.prodNameIndx}}</a>
                         </sup>
                         <cmp-error-message field-name="drugProdCtrl.prodNameId"
                                            form-ref="drugProdCtrl.drugProdForm"
@@ -150,7 +150,7 @@
                         <span class="field-name">5.&nbsp;{{::'PROPER_NAME' |translate}}</span>
                         <strong class="required">{{::"REQUIRED" |translate}}</strong>
                         <sup id="dr4_ref">
-                            <a class="fn-lnk" href="#dr4"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>6</a>
+                            <a class="fn-lnk" href="#dr4"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.proComNameIndx}}</a>
                         </sup>
                         <cmp-error-message field-name="drugProdCtrl.properNameId"
                                            form-ref="drugProdCtrl.drugProdForm"
@@ -170,7 +170,7 @@
                             <strong><span class="field-name">6. {{'CLINICAL_TRIAL'|translate}}
                             </span>
                             <sup id="dr4a_ref">
-                                <a class="fn-lnk" href="#dr4a"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>7</a>
+                                <a class="fn-lnk" href="#dr4a"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.clinicalIndx}}</a>
                             </sup></strong>
                         </header>
                         <div class="panel-body">
@@ -192,7 +192,7 @@
                 <legend><strong>
                     <span class="label-pi"><span data-ng-if="! drugProdCtrl.isCTA()">6</span><span data-ng-if="drugProdCtrl.isCTA()">7</span>. {{::'ADDRESS_NOC'|translate}}
                     <sup id="dr5_ref">
-                        <a class="fn-lnk" href="#dr5"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>9</a>
+                        <a class="fn-lnk" href="#dr5"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.dnfNocAddrIndx}}</a>
                     </sup></span></strong>
                 </legend>
                 <div>
@@ -253,7 +253,7 @@
                     <label class="full-width">
                         <span class="field-name">8. {{::'ARE_CTA_IMPORTED' |translate}}</span>
                         <sup id="dr5a_ref">
-                            <a class="fn-lnk" href="#dr5a"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>10</a>
+                            <a class="fn-lnk" href="#dr5a"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.dnfNocAddrIndx}}</a>
                         </sup>
                     </label>
                     <label class="col-xs-2" for="areDrugsImportedId">
@@ -282,7 +282,7 @@
                         <header class="panel-heading clearfix">
                             <h3 class="panel-title">7. {{'IMPORTER'|translate}}
                                 <sup id="dr6_ref">
-                                    <a class="fn-lnk" href="#dr6"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>11</a>
+                                    <a class="fn-lnk" href="#dr6"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.importerIndx}}</a>
                                 </sup>
                             </h3>
                         </header>
@@ -307,7 +307,7 @@
                         <span class="field-name"><span data-ng-if="! drugProdCtrl.isCTA()">8</span><span data-ng-if="drugProdCtrl.isCTA()">9</span>.&nbsp;{{::'DRUG_USE'|translate}}</span>
                         <strong class="required">{{::"REQUIRED" |translate}}</strong>
                         <sup id="dr7_ref">
-                            <a class="fn-lnk" href="#dr7"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>12</a>
+                            <a class="fn-lnk" href="#dr7"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.drugUseIndx}}</a>
                         </sup>
                         <cmp-error-message field-name="drugProdCtrl.drugUseId"
                                            form-ref="drugProdCtrl.drugProdForm"
@@ -457,7 +457,7 @@
                         <span class="field-name"><span data-ng-if="! drugProdCtrl.isCTA()">10</span><span data-ng-if="drugProdCtrl.isCTA()">11</span>. {{::'PROP_INDICATION'|translate}}</span>
                         <strong class="required">{{::'REQUIRED' |translate}}</strong>
                         <sup id="dr8_ref">
-                            <a class="fn-lnk" href="#dr8"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>13</a>
+                            <a class="fn-lnk" href="#dr8"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.pudIndx}}</a>
                         </sup>
                         <cmp-error-message field-name="drugProdCtrl.propIndicationId"
                                            form-ref="drugProdCtrl.drugProdForm"
@@ -619,7 +619,7 @@
                     data-ng-click="drugProdCtrl.saveXML()">{{drugProdCtrl.saveXMLLabel |translate}}
             </button>
             <sup id="dr11_ref">
-                <a class="fn-lnk" href="#dr11"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>16</a>
+                <a class="fn-lnk" href="#dr11"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::drugProdCtrl.htIndxList.genXmlIndx}}</a>
             </sup>
         </div>
     </div>
