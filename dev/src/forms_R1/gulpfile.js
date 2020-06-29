@@ -1906,7 +1906,7 @@ gulp.task('dev-transaction-htmlBuild', gulp.series('dev-transaction-pilot-clean'
         var copySources = gulp.src([paths.buildDevTransaction + '**/*'],
             {read: true, base: paths.buildDevTransaction});
     return (copySources.pipe(gulp.dest(paths.buildDevPilotTransaction)));
-}, 2000);
+}, 3000);
 }));
 
 /******** Dossier Related  tasks  *****************/
@@ -2068,7 +2068,7 @@ gulp.task('dev-drugProduct-htmlBuild', gulp.series('dev-drugProduct-pilot-clean'
         var copySources = gulp.src([paths.buildDevDrugProduct + '**/*'],
             {read: true, base: paths.buildDevDrugProduct});
     return (copySources.pipe(gulp.dest(paths.buildDevPilotDrugProduct)));
-}, 2000);
+}, 3000);
 }));
 
 // ******** dev piConverter tasks ******************
