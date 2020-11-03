@@ -1,4 +1,4 @@
-var gulp = require('gulp');
+xvar gulp = require('gulp');
 var plugins = require('gulp-load-plugins')();
 var del = require('del');
 var promisedDel = require('promised-del');

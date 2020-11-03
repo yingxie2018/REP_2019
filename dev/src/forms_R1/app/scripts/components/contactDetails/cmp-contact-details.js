@@ -113,7 +113,6 @@
             return false;
         };
 
-
         function _setIdNames() {
             var scopeId = vm.fldId+ "_" + $scope.$id;
             vm.firstNameId="firstName" + scopeId;

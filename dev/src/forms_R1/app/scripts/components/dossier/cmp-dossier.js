@@ -145,7 +145,6 @@
 
         };
 
-
         vm.updateErrorSummaryState = function () {
             vm.updateSummary = vm.updateSummary + 1;
         };
@@ -156,7 +155,6 @@
         };
         vm.appendixExtraError = function () {
             return (vm.extraAppendix && vm.extraAppendix.length > 0);
-
         };
 
 
@@ -211,9 +209,7 @@
         };
 
         vm.disableJSONSave=function() {
-
             return(vm.dossierModel.applicationType === APPROVED_TYPE&& vm.isExtern());
-
         };
 
         function getAppendix4Errors() {
@@ -241,12 +237,12 @@
          * @ngdoc disables the XML save button
          */
         function disableXMLSave() {
+
             // var formInvalid = true;
             // if (vm.dossierForm) {
             //     formInvalid = vm.dossierForm.$invalid;
             // }
             vm.disableXML = (vm.dossierModel.applicationType === vm.applicationInfoService.getApprovedType() && vm.isExtern());
-
         }
 
         /**
@@ -255,7 +251,6 @@
          */
         vm.isExtern = function () {
             return vm.userType === EXTERNAL_TYPE;
-
         };
 
         /**

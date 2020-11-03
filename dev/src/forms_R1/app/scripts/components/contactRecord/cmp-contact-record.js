@@ -47,7 +47,7 @@
         vm.updateSummary = 0; //triggers and error summary update
         vm.setSummaryFocus = 0; //sets the summary focus
         vm.showSummary = false;
-        //TODO get role model from a servide
+        //TODO get role model from a service
 
         vm.contactModel = {
             roleConcat: "",
@@ -80,8 +80,12 @@
             "phoneNumber": {
                 "type": "pattern",
                 "errorType": "MSG_ERR_PHONE_FORMAT"
+            },
+            "fax_number": {
+                "type": "pattern",
+                "errorType": "MSG_ERR_FAX_FORMAT"
             }
-        }
+        };
 
 
 
@@ -254,10 +258,8 @@
 
             if (!vm.formAmend) {
                 vm.isEditable = true
-            } else if (vm.formAmend && vm.contactModel.amendRecord) {
-                vm.isEditable = true;
             } else {
-                vm.isEditable = false;
+                vm.isEditable = vm.formAmend && vm.contactModel.amendRecord;
             }
         };
         vm.showRoutingId = function () {
