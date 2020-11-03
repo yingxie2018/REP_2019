@@ -15,7 +15,8 @@
                 'muscleModule',
                 'otherTissuesModule',
                 'reprodModule',
-                'skinModule'
+                'skinModule',
+                'errorMessageModule'
             ])
 })();
 
@@ -30,17 +31,23 @@
             controllerAs: 'tissuesSrcCtrl',
             bindings: {
                 record: '<',
+                onUpdate: '&',
                 onDelete: '&',
                 showErrors: '&',
+                isFileLoaded: '<',
                 service: '<',
-                systemUsed: '&'
+                systemUsed: '&',
+                addBtn: '<',
+                isFocus: '<',
+                cancelFocus: '&'
             }
         });
 
-    tissuesFluidsController.$inject = ['DossierLists', '$translate', '$filter'];
+    tissuesFluidsController.$inject = ['DossierLists', '$translate', '$filter','$scope'];
 
-    function tissuesFluidsController(DossierLists, $translate, $filter) {
+    function tissuesFluidsController(DossierLists, $translate, $filter,$scope) {
         var vm = this;
+        vm.updateRecord = 0; //triggers and error update
         vm.systemList = DossierLists.getTissuesSystem();
         vm.fluidsLists = DossierLists;
         vm.dosService = "";
@@ -55,9 +62,13 @@
          vm.muscleList = DossierLists.getMuscleSystem();*/
         vm.selectedSystemList = [];
         vm.model = {};
+        vm.requiredOnly = [{type: "required", displayAlias: "MSG_ERR_MAND"},
+                            {type: "duplicateSys", displayAlias: "TYPE_DUPLICATESYS"}];
+
+
 
         vm.$onInit = function () {
-
+            _setIdNames();
         };
 
         vm.$onChanges = function (changes) {
@@ -69,6 +80,14 @@
             if (changes.service) {
                 vm.dosService = changes.service.currentValue;
             }
+            if(changes.addBtn){
+                vm.resetToCollapsed = true;
+            }
+        };
+
+        vm.saveRecord = function () {
+            vm.updateRecord = vm.updateRecord + 1;
+            vm.onUpdate({rec: vm.model});
         };
 
         vm.deleteRecord = function () {
@@ -91,7 +110,7 @@
             vm.model.detailsConcat = "";
 
             vm.isUsed = vm.systemUsed({value: vm.model.systemType});
-            ctrl.$setValidity("duplicateRole", !vm.isUsed);
+            ctrl.$setValidity("duplicateSys", !vm.isUsed);
             if (vm.isUsed) {
                 vm.model.system = {};
                 vm.otherDetails = "";
@@ -183,6 +202,11 @@
             }
         };
 
+        function _setIdNames() {
+            var scopeId = "_" + $scope.$id;
+            vm.tissuesFormId = "tissuesFluidsRecForm" + scopeId;
+            vm.systemTypeId="system_type"+scopeId;
+        }
         /**
          * Sets the state of the other field when system details is other
          * @returns {boolean}

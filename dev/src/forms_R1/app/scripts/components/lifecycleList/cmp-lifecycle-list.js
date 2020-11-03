@@ -20,11 +20,14 @@
                 records: '<',
                 onUpdate: '&',
                 isAmend: '&',
+                isFinal: '<',
+                isFileLoaded: '<',
                 getNewTransaction: '&',
                 setSequenceValue:'&',
                 deprecateSequence: '&', //bit of a hack
-                showErrors: '&',
+                showErrorSummary: '<',
                 isEctd: '<',
+                getDossierType: '<',
                 parentDirty: '<',
                 sequenceUpdated:'<',
                 getCurrentSequence:'&'
@@ -49,32 +52,30 @@
         vm.addFocused = false;
         vm.resetCollapsed = false;
         vm.activityTypes = [];
-        vm.startingSequence=0;
-        vm.seqUpdated=false;
-
+        vm.startingSequence = 0;
+        vm.seqUpdated = false;
+        vm.showSummary = false;
+        vm.finalState = false;
+        vm.requiredFlag = true; //use to signal expanding table extend an empty record
+        vm.finalRecNum = 0;
         vm.columnDef = [
-            {
-                label: "SEQUENCE_NUM",
-                binding: "sequence",
-                width: "8"
-            },
             {
                 label: "CONTROL_NUMBER",
                 binding: "controlNumber",
                 width: "8"
             },
             {
-                label: "DATE_SUBMITTED",
-                binding: "dateFiled",
+                label: "ACTIVITY_LEAD",
+                binding: "activityLead",
                 width: "12"
             },
             {
-                label: "REG_ACTIVITY",
+                label: "REG_ACTIVITY_TYPE",
                 binding: "activityTypeDisplay",
                 width: "30"
             },
             {
-                label: "SEQUENCE_DESCRIPT",
+                label: "SEQUENCE_TYPE",
                 binding: "sequenceConcat",
                 width: "48"
             }
@@ -83,7 +84,7 @@
         vm.$onInit = function () {
             //local var from binding
             vm.activityTypes= TransactionLists.getActivityTypes();
-            vm.selectRecord = -1;
+            vm.selectRecord = 0;
             vm.addFocused = false;
             vm.startingSequence=0;
 
@@ -94,6 +95,9 @@
 
             if (changes.records) {
                 vm.lifecycleList = changes.records.currentValue;
+                if(vm.lifecycleList.length < 1){
+                    vm.addTransaction();
+                }
                 vm.isDetailsValid = true;
                 vm.updateErrorState();
                 vm.startingSequence=0;
@@ -110,8 +114,23 @@
                 vm.seqUpdated=changes.sequenceUpdated.currentValue;
                 //vm.startingSequence=vm.getCurrentSequence();
             }
+            if(changes.showErrorSummary){
+                vm.showSummary=changes.showErrorSummary.currentValue;
+            }
+            if(changes.isFinal){
+                vm.finalState = changes.isFinal.currentValue;
+                vm.finalRecNum = 0;
+            }
+            if (changes.isFileLoaded) {
+                if (changes.isFileLoaded.currentValue) {
+                    vm.requiredFlag = false;
+                }
+            }
         };
 
+        // vm.$postLink = function () {
+            // vm.addTransaction();
+        // };
 
         vm.deleteRecord = function (aID) {
             var idx = vm.lifecycleList.indexOf(
@@ -122,6 +141,7 @@
             vm.isDetailsValid = true; //case that incomplete record is deleted
             vm.deprecateSequence();
             vm.updateErrorState();
+            vm.requiredFlag = false;
             vm.resetCollapsed = !vm.resetCollapsed;
             vm.addFocused = false;
         };
@@ -131,7 +151,8 @@
          * @private
          */
         function _checkFirstRecord() {
-            if (!vm.lifecycleList || vm.lifecycleList.length === 0 || vm.lifecycleList.length > 1) {
+            if (!vm.lifecycleList || vm.lifecycleList.length === 0
+                || vm.lifecycleList.length > 1) {
                 return;
             }
             var record = angular.copy(vm.lifecycleList[0]);
@@ -165,10 +186,14 @@
             if (!vm.lifecycleList || vm.lifecycleList.length === 0) {
                 vm.oneRecord = "";
             } else {
-                vm.oneRecord = "is value";
-
+                for (var i = 0; i < vm.lifecycleList.length; i++ ) {
+                    if (vm.lifecycleList[i].isSaved) {
+                        vm.oneRecord = "is value";
+                        return;
+                    }
+                }
+                vm.oneRecord = "";
             }
-
         };
 
         vm.addTransaction = function () {
@@ -176,20 +201,48 @@
             vm.lifecycleList.unshift(defaultTransaction); //add to top
             vm.resetCollapsed = !vm.resetCollapsed;
             vm.selectRecord = 0; //need to generate a change
+            if(vm.finalState) {
+               vm.finalRecNum++;
+            }
             vm.addFocused = false;
             vm.setValid(false);
             vm.updateErrorState();
         };
         vm.setStartingSequence=function(){
-            if(isNaN(vm.startingSequence) ||vm.startingSequence==null){
+            if(isNaN(vm.startingSequence) ||vm.startingSequence === null){
                 vm.startingSequence=0;
             }
             vm.setSequenceValue({start:vm.startingSequence});
         };
 
-        vm.isAddDisabled = function () {
-            return (!vm.isDetailsValid || (!vm.ectdValue && vm.lifecycleList.length > 0) || (vm.lifecycleListForm.$invalid && vm.lifecycleList.length > 0))
+        vm.isSelectedRecord = function () {
+            return (vm.selectRecord === 0 );
 
+        };
+
+        vm.isAddDisabled = function () {
+
+            if( vm.lifecycleList.length > 0 )
+            {
+                return true;
+            }
+            return false;
+        /**    console.log( vm.finalState );
+           if( vm.finalState)
+           {
+               vm.lifecycleList = [];
+               vm.lifecycleList.length = 0;
+               return false;
+           }
+           else
+           {
+               if( vm.lifecycleList.length > 0 )
+               {
+                   return true;
+               }
+           }
+           return false;
+         **/
         };
 
         vm.setValid = function (detailValid) {
@@ -203,24 +256,28 @@
             record.dateFiled = convertDate(record.dateFiled);
             record.startDate = convertDate(record.startDate);
             record.endDate = convertDate(record.endDate);
+            record.isSaved = true;
             vm.lifecycleList[idx] = angular.copy(record);
             vm.setValid(true);
             vm.selectRecord = -1;
+            vm.requiredFlag = false;
             vm.resetCollapsed = !vm.resetCollapsed;
             vm.addFocused = true;
+            vm.updateErrorState();
+
         };
         /**
          * @ngdoc method determines the state of the list errors
          *
          * @returns {boolean}
          */
-        vm.showError = function (isTouched, isInvalid) {
+      /*  vm.showError = function (isTouched, isInvalid) {
 
             if ((vm.isParentDirty && isInvalid) || (vm.showErrors() && isInvalid)) {
                 return true
             }
             return false
-        };
+        };*/
         /**
          * Converts date to HC standard TOD0: replace with filter?
          * @param value

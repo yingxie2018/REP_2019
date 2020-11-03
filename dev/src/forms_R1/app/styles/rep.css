@@ -57,9 +57,29 @@ label > select {
 .rep-margin-top {
     margin-top: 5px;
 }
+.rep-margin-top-12 {
+    margin-top: 12px;
+}
+
+.rep-margin-left {
+    margin-left: 50px;
+}
 
 .rep-margin-minus-top {
     margin-top: -5px !important;
+}
+
+.rep-margin-bottom {
+    margin-bottom: 0px !important;
+}
+
+.rep-margin-top-bottom {
+    margin-top: 23px;
+    margin-bottom: 23px;
+}
+
+.rep-margin-right {
+    margin-right: 15px;
 }
 
 .rep-expander {
@@ -72,8 +92,11 @@ label > select {
 }
 
 .rep-center {
-    margin: 10px auto;
+    margin: 10px;
+}
 
+.rep-info-help:before {
+    content: "" !important;
 }
 
 .rep-help-button {
@@ -86,6 +109,10 @@ label > select {
     color: #1c578a;
     background-color: transparent;
     border: none;
+}
+
+.rep-help-button-primary:focus {
+    outline: 2px dotted darkblue;
 }
 
 .rep-normal-font {
@@ -101,7 +128,7 @@ label > select {
     width: 100% !important;
     font-weight: normal;
     font-size: 16px;
-    padding-top: 6px;
+    padding-top: 0px;
     padding-right: 0px;
     padding-bottom: 0px;
     padding-left: 0px;
@@ -109,6 +136,14 @@ label > select {
 
 .rep-pad-top {
     padding-top: 5px;
+}
+
+.rep-pad-top-10 {
+    padding-top: 10px;
+}
+
+.rep-bottom {
+    bottom: 5px;
 }
 
 .select2-container .select2-choice {
@@ -178,4 +213,80 @@ input[type="date"] {
 
 .rep-close {
     opacity: 0.7;
+}
+.rep-link{
+    color: #0535d2;
+    text-decoration: underline;
+}
+ strong.required {
+    color: #d3080c !important;
+ font-weight: 700;
+}
+.legend-rep{
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+.legend-rep-h3{
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 23px;
+    font-size: 22px;
+    line-height: inherit;
+    color: #333;
+    border: 0;
+    font-family: Helvetica, Arial, sans-serif !important;
+    font-weight: 700 !important;
+}
+
+.checkbox-pi {
+     margin-left: 25px;
+ }
+
+.label-pi {
+    font-size: 16px;
+}
+
+ul.no-bullets li
+{
+    list-style-type: none;
+}
+
+div .module-attention {
+    background-color: #fffcee;
+    outline: 1px solid #ffe75d;
+    background-position: 0 0;
+    padding-top: 5px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+}
+.rep-info-button {
+    background-color: transparent !important;
+    border: none !important;
+    margin-top: 5px;
+}
+
+
+.rep-info-button:focus {
+    outline: 2px dotted white
+
+}
+.ref-info-link {
+    width: auto !important;
+}
+.fa-info-circle:before {
+    color: white;
+}
+.floatLeft {
+    float:left;
+}
+.floatRight {
+    float:right;
+}
+.padding-bttm-lg[open] {
+    padding-bottom: 2.5em;
+}
+.radioButtonTitle {
+    font-size:16px;
+    font-weight:700;
 }

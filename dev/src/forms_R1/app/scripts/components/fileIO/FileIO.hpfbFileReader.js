@@ -27,8 +27,8 @@
             link: link,
             restrict: 'A',
             scope: {
-                hpfbFileSelect: "&",
-            },
+                hpfbFileSelect: "&"
+            }
         };
         return directive;
 
@@ -61,6 +61,7 @@
         bindings: {
             updateModelRoot: '&',
             rootElem: '@',
+            versionExpected: '@'
         }
     });
 
@@ -71,12 +72,20 @@
         vm.fileTypes = ".xml, .hcsc";
         vm.modelCallback = function (fileContent) {
             vm.status = "";
-            if (fileContent) {
+            if (fileContent && fileContent.jsonResult) {
+                var versionArray = fileContent.jsonResult[vm.rootElem]['software_version'].split('.');
+                if (vm.versionExpected && vm.versionExpected !== versionArray[0]) {
+                    fileContent = null;
+                    vm.status = "MSG_ERR_FILE_VERSION";
+                } else {
+                    vm.status = fileContent.messages;
+                    vm.updateModelRoot({fileContent: fileContent});
+                }
+            } else {
                 vm.status = fileContent.messages;
+                vm.updateModelRoot({fileContent: fileContent});
             }
-            vm.updateModelRoot({fileContent: fileContent});
             angular.element(fileLoad).trigger('focus');
-
         };
     }
 })();
@@ -183,14 +192,14 @@
                         var splitFile = file.name.split('.');
                         var fileType = splitFile[splitFile.length - 1];
                         if ((fileType.toLowerCase()) == draft_file_type) {
-                            convertToJSONObjects(reader);
+                            convertToJSONObjects(reader, scope);
                             checkRootTagMatch(reader, scope);
                             /* As per meeting of oct 21
                             if (reader.parseResult.jsonResult) {
                                 compareHashInJson(reader, scope.rootTag);
                             }*/
                         } else if ((fileType.toLowerCase() === "xml")) {
-                            convertXMLToJSONObjects(reader);
+                            convertXMLToJSONObjects(reader, scope);
                             checkRootTagMatch(reader, scope);
                             /* As per meeting of oct 21
                             if (reader.parseResult.jsonResult) {
@@ -241,10 +250,11 @@
             return deferred.promise;
         }
 
-        function convertToJSONObjects(reader) {
+        function convertToJSONObjects(reader, scope) {
 
             try {
                 convertResult.jsonResult = JSON.parse(reader.result);
+                convertResult.jsonResult[scope.rootTag].importFileType = draft_file_type;
                 convertResult.messages = msg_success;
                 reader.parseResult = convertResult;
             } catch (e) {
@@ -259,7 +269,7 @@
          * @param reader- the extended file reader object
          * @returns null
          */
-        function convertXMLToJSONObjects(reader) {
+        function convertXMLToJSONObjects(reader, scope) {
             var xmlConfig = {
                 escapeMode: true,
                 emptyNodeForm: "text",
@@ -269,10 +279,12 @@
             //converts XML as a string to a json
             convertResult.jsonResult = xmlConverter.xml_str2json(reader.result);
 
-            if (convertResult.jsonResult === null) {
+            if (!convertResult.jsonResult || !convertResult.jsonResult[scope.rootTag]) {
                 convertResult.messages = msg_err_xmlparse;
             } else {
                 convertResult.messages = msg_success;
+                convertResult.jsonResult[scope.rootTag].importFileType = "xml";
+
             }
             reader.parseResult = convertResult;
         }
@@ -362,14 +374,26 @@
             saveAs(blob, fileName);
         }
 
-        function xmlToFile(jsonObj, fileName, rootTag) {
+        /**
+         *
+         * @param jsonObj
+         * @param fileName
+         * @param rootTag
+         * @param xslName - (optional). The stylesheet name. For backwards compatibility defaults to REP_Combined
+         */
+        function xmlToFile(jsonObj, fileName, rootTag, xslName) {
             if (!jsonObj) return;
             //As per meeting of Oct 21, ignore checksum
             //clear out any previous value if it exists
             //jsonObj[rootTag].data_checksum = "";
             var xmlResult = convertJSONObjectsToXML(jsonObj);
             //TODO this needs to be configurable
-           xmlResult= '<?xml version="1.0" encoding="UTF-8"?>'+ '<?xml-stylesheet  type="text/xsl" href="REP_Combined.xsl"?>'+xmlResult;
+            if(!xslName) {
+                xmlResult = '<?xml version="1.0" encoding="UTF-8"?>' + '<?xml-stylesheet  type="text/xsl" href="REP_Combined.xsl"?>' + xmlResult;
+            }else{
+
+                xmlResult = '<?xml version="1.0" encoding="UTF-8"?>' + '<?xml-stylesheet  type="text/xsl" href="'+xslName+'"?>' + xmlResult;
+            }
            // var hash = CryptoJS.SHA256(xmlResult);
             //jsonObj[rootTag].data_checksum = hash.toString();
             //regenerate the xml

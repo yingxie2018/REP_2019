@@ -6,7 +6,7 @@
     'use strict';
 
     angular
-        .module('nervousModule', [])
+        .module('nervousModule', ['errorMessageModule', 'drugProductService'])
 })();
 
 
@@ -21,20 +21,40 @@
             controller: nervousSystemController,
             bindings: {
                 record: '<',
+                isFileLoaded: '<',
+                updateRecord: '<',
                 otherUpdate: '&',
-                concatUpdate: '&'
+                concatUpdate: '&',
+                showErrors:'&',
+                addBtn: '<'
             }
 
         });
-    function nervousSystemController() {
+
+    nervousSystemController.$inject=['$scope', 'DrugProductService']
+    function nervousSystemController($scope, DrugProductService) {
         var vm = this;
         vm.model = {};
+        vm.showError = false;
+        vm.requiredOnly = [{type: "required", displayAlias: "MSG_ERR_MAND"}];
+
         vm.$onInit = function () {
-            vm.isSelected = "";
+            vm.drugProductService = new DrugProductService();
+            vm.isSelected = vm.isFileLoaded == true && vm.drugProductService.checkSelectedValues(vm.model, 'Nervous') ? "selected" : "";
+            _setIdNames();
         };
         vm.$onChanges = function (changes) {
             if (changes.record) {
                 vm.model = (changes.record.currentValue);
+                vm.updateErrorState();
+            }
+            if (changes.addBtn && changes.addBtn.currentValue > 1){
+                vm.isSelected = 'selected';
+            }
+            if(changes.updateRecord){
+                if (changes.updateRecord.currentValue > 0) {
+                    vm.showError = true;
+                }
                 vm.updateErrorState();
             }
         };
@@ -42,6 +62,9 @@
         vm.detailsChanged = function (alias, value) {
 
             vm.concatUpdate({'alias': alias, 'value': value});
+            if(value) {
+                vm.showError = false;
+            }
             vm.updateErrorState();
         };
 
@@ -53,7 +76,7 @@
                     if (keys[i] === 'otherNervous') {
                         if (!vm.model.otherDetails) {
                             vm.isSelected = "";
-                            return
+                            return;
                         }
                         vm.isSelected = "selected";
                         return;
@@ -63,8 +86,16 @@
                     }
                 }
             }
-            vm.isSelected = ""
+            vm.isSelected = "";
         };
+
+        vm.showErrorMessage = function(isInvalid){
+            if ((isInvalid && vm.showError) || (vm.showErrors() && isInvalid )) {
+                return true;
+            }
+            return false;
+        };
+
         vm.otherChanged = function () {
             var state = false;
             if (vm.model.otherNervous) {
@@ -74,15 +105,15 @@
                 vm.model.otherDetails = "";
             }
             vm.otherUpdate();
-            vm.updateErrorState();
+            // vm.updateErrorState();
             return state;
         };
 
-        vm.showErrorMissing=function(){
-
-            return (vm.nervForm.$dirty && vm.nervForm.$invalid);
+        function _setIdNames() {
+            var scopeId = "_" + $scope.$id;
+            vm.roleMissingId = "roleMissing" + scopeId;
+            vm.systemRoleId = "nervous_legend" + scopeId;
+            vm.otherDetailsId = "nervous_details" + scopeId;
         }
-
-
     }
 })();

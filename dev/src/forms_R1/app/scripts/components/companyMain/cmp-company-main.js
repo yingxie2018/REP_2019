@@ -4,6 +4,7 @@
         .module('companyMain', [
             'companyService',
             'applicationInfoService',
+            'companyHelpText',
             'ngMessages',
             'ngAria',
             'addressList',
@@ -15,6 +16,7 @@
             'hpfbConstants',
             'ui.bootstrap',
             'errorSummaryModule',
+            'alertModule',
             'focus-if'
         ])
 })();
@@ -32,9 +34,9 @@
             }
         });
 
-    companyMainCtrl.$inject = ['CompanyService', 'ApplicationInfoService', 'hpfbFileProcessing', '$filter', '$scope', 'INTERNAL_TYPE', 'EXTERNAL_TYPE', 'APPROVED_TYPE', 'AMEND_TYPE','ENGLISH','$translate'];
+    companyMainCtrl.$inject = ['CompanyService', 'ApplicationInfoService', 'hpfbFileProcessing', '$filter', '$scope', 'INTERNAL_TYPE', 'EXTERNAL_TYPE', 'APPROVED_TYPE', 'AMEND_TYPE','ENGLISH','getRoleLists','$translate','$anchorScroll','$location'];
 
-    function companyMainCtrl(CompanyService, ApplicationInfoService, hpfbFileProcessing, $filter, $scope, INTERNAL_TYPE, EXTERNAL_TYPE, APPROVED_TYPE, AMEND_TYPE, ENGLISH, $translate) {
+    function companyMainCtrl(CompanyService, ApplicationInfoService, hpfbFileProcessing, $filter, $scope, INTERNAL_TYPE, EXTERNAL_TYPE, APPROVED_TYPE, AMEND_TYPE, ENGLISH, getRoleLists, $translate, $anchorScroll, $location) {
 
         var vm = this;
         vm.userType = EXTERNAL_TYPE;
@@ -46,7 +48,8 @@
         vm.showContent = _loadFileContent;
         vm.disableXML = true;
         vm.disableDraftButton = false;
-        vm.configCompany = {
+        vm.showAmendNote = false;
+            vm.configCompany = {
             "label": "COMPANY_ID",
             "minFieldLength": "5",
             "fieldLength": "6",
@@ -60,41 +63,49 @@
             vm.rootTag = vm.companyService.getRootTag();
         }
         vm.applTypes = vm.companyService.getApplicationTypes();
+        vm.formTypeList = getRoleLists.getFormTypes();
         vm.company = vm.companyService.getModelInfo();
-        vm.alerts = [false, false, false, false, false];
+        vm.addressList = [];
+        vm.addrImpCompanyName =[];
+        vm.indexList = vm.companyService.helpTextSequences;
+        vm.alerts = [false, false, false, false, false, false];
+        /**vm.alertAnchors = ["load-instructions-toggle",
+            "load-instructions-toggle",
+            "load-instructions-toggle",
+            "load-instructions-toggle",
+            "load-instructions-toggle",
+            "load-instructions-toggle"]; **/
         vm.updateSummary=false;
         vm.showErrorSummary=false;
+        vm.privacyStat=false;
+        vm.isFileLoaded=false;
+        vm.savePressed=false; //used for focus
+        vm.focusSummary = 0; //messaging to set focus on the error summary
         vm.lang = $translate.proposedLanguage() || $translate.use();
-
+        vm.requiredOnlyError = [{type: "required", displayAlias: "MSG_ERR_MAND"}];
         vm.exclusions = {
-            "contactListCtrl.contactListForm": "true",
-            "addressListCtrl.addressListForm": "true"
+            "contactRec.contactRecForm": "true",
+            "addressRec.addressRecForm": "true"
         };
-        vm.alias = {
-            "roleMissing": {
-                "type": "fieldset",
-                "parent": "fs_roleMissing"
-            },
+        vm.alias={
+
             "contactRolesValid": {
-                "type": "button",
-                "parent": "",
-                "target": "addContact"
+                "type": "element",
+                "target": "contactList"
             },
             "addressRolesValid": {
-                "type": "button",
-                "parent": "",
-                "target": "addAddressBtn"
+                "type": "element",
+                "target": "addressList"
             },
-            "phoneNumber": {
-                "type": "pattern",
-                "errorType": "MSG_ERR_PHONE_FORMAT"
+            "importerIdValid": {
+                "type": "element",
+                "target": "addressList"
             },
-            "country": {
-                "type": "select2",
-                "name": "country"
+            "contactImporterVaild":{
+                "type": "element",
+                "target": "contactList"
             }
         };
-
 
         vm.initUser = function (id) {
 
@@ -103,9 +114,12 @@
         vm.$onInit = function () {
             //add init code here
             //reset instructions
-            vm.alerts = [false, false, false, false, false];
+            _setIdNames();
+
+            vm.alerts = [false, false, false, false, false, false];
             vm.updateSummary=false;
             vm.showErrorSummary=false;
+            vm.savePressed=false;
         };
 
         vm.$onChanges = function (changes) {
@@ -125,7 +139,11 @@
          */
         vm.setAmend = function () {
 
-            vm.formAmendType = (vm.company.applicationType === AMEND_TYPE)
+            vm.formAmendType = (vm.company.applicationType === AMEND_TYPE);
+            /**
+            if(vm.company.applicationType === APPROVED_TYPE && vm.userType === EXTERNAL_TYPE){
+                vm.company.reasonAmend="";
+            }*/
         };
 
         /**
@@ -140,17 +158,37 @@
          * @ngdoc method - saves the data model as XML format
          */
         vm.saveXML = function () {
-            if(vm.companyEnrolForm.$invalid){
-                vm.showErrorSummary= vm.showErrorSummary+1;
-                vm.updateErrorSummary();
-
-            }else {
-                var writeResult = _transformFile();
-                hpfbFileProcessing.writeAsXml(writeResult, _createFilename(), vm.rootTag);
-                vm.showErrorSummary=true;
-                vm.companyEnrolForm.$setPristine();
-            }
+                if (vm.companyEnrolForm.$invalid) {
+                    vm.showErrorSummary = true;
+                    vm.updateErrorSummary();
+                    vm.savePressed = true;
+                    vm.focusSummary++;
+                    goToErrorSummary();
+                } else {
+                    if (vm.companyEnrolForm["addressListCtrl.addressListForm"].$pristine && vm.companyEnrolForm["contactListCtrl.contactListForm"].$pristine) {
+                        var writeResult = _transformFile();
+                        hpfbFileProcessing.writeAsXml(writeResult, _createFilename(), vm.rootTag,
+                            vm.companyService.getXSLFileName());
+                        vm.showErrorSummary = false;
+                        vm.companyEnrolForm.$setPristine();
+                        vm.savePressed = false;
+                    } else {
+                        if (vm.lang === ENGLISH) {
+                            alert("Please save the unsaved input data before generating XML file.");
+                        } else {
+                            alert("Veuillez sauvegarder les données d'entrée non enregistrées avant de générer le fichier XML.");
+                        }
+                    }
+                }
         };
+
+        function goToErrorSummary() {
+            var masterError = angular.element(document.querySelector('#master-error'));
+            if (masterError) {
+                $location.hash('master-error');
+                $anchorScroll();
+            }
+        }
 
         /**
          * Creates a filename based on HC specifications
@@ -187,7 +225,6 @@
                 if(!vm.companyEnrolForm.$pristine) {
                     vm.company.enrolmentVersion = vm.applicationInfoService.incrementMajorVersion(vm.company.enrolmentVersion);
                     vm.company.applicationType = ApplicationInfoService.prototype.getApprovedType();
-                    updateModelOnApproval();
                 }
             } else {
                 vm.company.enrolmentVersion = vm.applicationInfoService.incrementMinorVersion(vm.company.enrolmentVersion)
@@ -195,20 +232,22 @@
             return vm.companyService.transformToFileObj(vm.company);
         }
 
-        $scope.$watch("main.companyEnrolForm.$valid", function () {
-            disableXMLSave()
+        $scope.$watch("main.companyEnrolForm.$error", function () {
+            //disableXMLSave()
+            vm.updateErrorSummary();
         }, true);
 
         function disableXMLSave() {
-            var isApprovedExternal = (vm.company.applicationType == vm.companyService.getApprovedType() && vm.isExtern());
+            var isApprovedExternal = (vm.company.applicationType === vm.companyService.getApprovedType() && vm.isExtern());
             vm.disableDraftButton = isApprovedExternal;
             vm.disableXML = vm.companyEnrolForm.$invalid || isApprovedExternal; //used to disable the generate xml button
             //vm.showErrorSummary=true;
-        };
+
+        }
 
         function disableJSONSave() {
 
-            vm.disableJson = (vm.company.applicationType == vm.companyService.getApprovedType() && vm.isExtern())
+            vm.disableJson = (vm.company.applicationType === vm.companyService.getApprovedType() && vm.isExtern())
         }
 
         function _setComplete() {
@@ -223,11 +262,14 @@
                 vm.companyService.transformFromFileObj(resultJson);
                 vm.company = {};
                 angular.extend(vm.company, vm.companyService.getModelInfo());
+                vm.hasAddrImpCompanyName(vm.company.addressList);
                 _setComplete();
                 vm.setAmend();
+                vm.isFileLoaded = true;
                 vm.showErrorSummary=false;
                 vm.companyEnrolForm.$setDirty();
-
+                vm.showAmendNote = (vm.company.applicationType === vm.companyService.getApprovedType() && vm.isExtern());
+                vm.company.applicationTypeText = $translate.instant(vm.company.applicationType);
             }
             disableXMLSave();
         }
@@ -239,8 +281,10 @@
         vm.setApplType = function (type) {
 
             vm.company.applicationType = type;
+            vm.company.applicationTypeText = $translate.instant(vm.company.applicationType);
             disableXMLSave();
             vm.setAmend();
+            vm.company.reasonAmend="";
         };
 
         //used on update
@@ -266,6 +310,27 @@
             var temp = vm.company.addressList;
             vm.company.addressList = [];
             vm.company.addressList = temp;
+         };
+
+        vm.hasAddrImpCompanyName = function (addressList) {
+            vm.addrImpCompanyName = [];
+            for (var i =0; i< addressList.length; i++){
+                if(addressList[i].addressRole.importer){
+                    vm.addrImpCompanyName.push(addressList[i].companyName);
+                }
+            }
+            return vm.addrImpCompanyName;
+        };
+
+
+        vm.isImpCompanyNameUsed = function (companyName) {
+
+           for (var i=0; i< vm.company.contactList.length; i++){
+                if(companyName !=="" && companyName === vm.company.contactList[i].impCompanyName){
+                    return true;
+                }
+            }
+            return false;
         };
 
         //TODO remove?
@@ -283,21 +348,13 @@
         }
 
         vm.isExtern = function () {
-            return vm.userType == EXTERNAL_TYPE;
+            return vm.userType === EXTERNAL_TYPE;
         };
         /**
          * @ngdoc method when a form gets approved
          * remove any amendment checkboxes
          */
-        function updateModelOnApproval() {
-            //reset any amend selections
-            for (var i = 0; i < vm.company.addressList.length; i++) {
-                vm.company.addressList[i].amendRecord = false;
-            }
-            for (var j = 0; j < vm.company.contactList.length; j++) {
-                vm.company.contactList[j].amendRecord = false;
-            }
-        }
+
 
         /**
          * Closes the instruction alerts
@@ -320,7 +377,7 @@
             if (value < vm.alerts.length) {
                 vm.alerts[value] = true;
             }
-        }
+        };
 
         /**
          * Increments the conunter to send a signal to update the error summary module
@@ -328,7 +385,7 @@
         vm.updateErrorSummary=function(){
             vm.updateSummary= vm.updateSummary+1;
 
-        }
+        };
         /**
          * Determines if the current language is french
          * @returns {boolean}
@@ -337,5 +394,35 @@
             return(vm.lang!== ENGLISH);
         };
 
+        vm.temp=function(){
+            console.log($scope)
+        };
+
+
+
+        function _setIdNames() {
+            var scopeId="_"+  $scope.$id;
+            vm.formId = "company_form" +scopeId;
+            vm.privacyStatementID = "privacy_statement" +scopeId;
+            vm.typeId="dossier_type"+ scopeId;
+        }
+
+        /**
+         * For individual controls, whether to show the error for a fiedl
+         * @param ctrl.isInvalid - control $invalid flag
+         * @param ctrl.isTouched -control $touched flag
+         * @returns {*|dossierCtrl.showErrors}
+         */
+        vm.showError = function (ctrl) {
+            if (vm.showErrorSummary) {
+                return true;
+            }
+            if(!ctrl || ctrl.$untouched){
+                return false;
+            }
+            return ((ctrl.$invalid && ctrl.$touched) || (vm.showErrorSummary && ctrl.$invalid));
+        };
+
     }
+
 })();

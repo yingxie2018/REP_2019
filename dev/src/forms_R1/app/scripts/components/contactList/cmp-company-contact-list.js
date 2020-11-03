@@ -6,7 +6,7 @@
     'use strict';
 
     angular
-        .module('contactList2', ['contactRecord','expandingTable','errorSummaryModule'])
+        .module('contactList2', ['contactRecord','expandingTable','hpfbConstants','errorSummaryModule'])
 })();
 
 (function () {
@@ -23,22 +23,30 @@
                 onUpdate: '&',
                 getNewContact: '&',
                 isAmend: '<',
+                isFileLoaded: '<',
                 companyService:'<',
                 showErrorSummary:'<',
-                errorSummaryUpdate:'<'
+                errorSummaryUpdate:'<',
+                updateErrorSummary:'&', //update the parent error summary
+                userType:'<',
+                htIndxList: '<',
+                addrImpCompanyName: '<'
             }
         });
-    contactListCtrl.$inject = ['$filter','CompanyService'];
-    function contactListCtrl($filter,CompanyService) {
+    contactListCtrl.$inject = ['$filter','CompanyService', 'INTERNAL_TYPE'];
+    function contactListCtrl($filter,CompanyService, INTERNAL_TYPE) {
         var vm = this;
         vm.selectRecord = -1; //the record to select
         vm.isDetailValid=true; //used to track if details valid. If they are  not do not allow expander collapse
         vm.allRolesSelected=false;
+        vm.impCompanySelected=true;
         vm.contactList = [];
         vm.formAmend = false;
+        vm.isInternal = false;
+        vm.requiredFlag = true; //use to signal expanding table extend an empty record
         vm.resetCollapsed = false;//used to signal expanding table collapse
         vm.updateSummary=0; //sends signal to update error summary object
-        vm.showSummary=false; //flag to control error summary visibility
+      //  vm.showSummary=false; //flag to control error summary visibility
         vm.columnDef = [
             {
                 label: "FIRSTNAME",
@@ -64,17 +72,17 @@
 
 
         vm.alias = {
-            "roleMissing": {
+       /*     "roleMissing": {
                 "type": "fieldset",
                 "parent": "fs_roleMissing"
             },
             "contactRolesValid": {
                 "type": "element",
                 "target": "addContact"
-            }
+            }*/
         };
         vm.exclusions = {
-            "contactRec.contactRecForm": "true"
+           // "contactRec.contactRecForm": "true"
         };
 
 
@@ -88,6 +96,7 @@
             //vm.allRolesSelected = vm.isAllContactRolesSelected();
         };
         vm.$onChanges = function (changes) {
+            vm.impCompanySelected = vm.isImpCompanySelected();
             if (changes.contacts) {
                 vm.contactList = changes.contacts.currentValue;
                 updateRolesConcat();
@@ -103,7 +112,29 @@
             }
             if(changes.showErrorSummary){
                 vm.showSummary=changes.showErrorSummary.currentValue;
-                vm.updateErrorSummaryState()
+                //vm.updateErrorSummaryState()
+            }
+            if (changes.userType) {
+
+                var isIn = changes.userType.currentValue;
+                if (isIn === INTERNAL_TYPE) {
+                    vm.isInternal = true;
+                }
+                else {
+
+                    vm.isInternal = false;
+                }
+            }
+            if (changes.isFileLoaded) {
+                if (changes.isFileLoaded.currentValue) {
+                    vm.requiredFlag = false;
+                }
+            }
+        };
+
+        vm.$postLink = function () {
+            if(!vm.isInternal) {
+                vm.addContact();
             }
         };
 
@@ -137,12 +168,15 @@
             if (roles.mailing) {
                 result = result + " MAIL"
             }
+           if (roles.importer) {
+               result = result + " IMP"
+           }
             if (roles.repPrimary) {
                 result = result + " REP1"
             }
-            if (roles.repSecondary) {
-                result = result + " REP2"
-            }
+            // if (roles.repSecondary) {
+            //     result = result + " REP2"
+            // }
             contactModel.roleConcat = result;
         }
 
@@ -154,11 +188,13 @@
 
         vm.showError = function () {
             // !vm.contactListForm.$pristine
-            return(!vm.isAllContactRolesSelected());
+            // return(!vm.isAllContactRolesSelected());
            /* if ((!vm.isAllContactRolesSelected() )) {
                 return true
             }
             return false*/
+
+            return !vm.isAllContactRolesSelected() || !vm.isImpCompanySelected();
         };
 
         vm.onUpdateContactRecord = function (record) {
@@ -168,7 +204,10 @@
              ); //TODO fix filter
              vm.contactList[idx] = angular.copy(record);
             vm.allRolesSelected= vm.isAllContactRolesSelected();
+            vm.impCompanySelected = vm.isImpCompanySelected();
+            vm.requiredFlag = false;
             vm.resetCollapsed = !vm.resetCollapsed;
+            vm.contactListForm.$setPristine();
 
         };
 
@@ -180,8 +219,11 @@
             vm.onUpdate({newList: vm.contactList});
             vm.isDetailValid = true; //case that incomplete record
             vm.allRolesSelected= vm.isAllContactRolesSelected();
+            vm.impCompanySelected = vm.isImpCompanySelected();
+            vm.requiredFlag = false;
             vm.resetCollapsed = !vm.resetCollapsed;
             vm.updateErrorSummaryState();
+            vm.contactListForm.$setPristine();
 
         };
 
@@ -190,13 +232,19 @@
          */
         vm.addContact = function () {
             var defaultContact = vm.getNewContact();
+            defaultContact.focusOnFirstName = vm.isFocus;
             vm.contactList.push(defaultContact);
             //select table row first then make invalid
             vm.selectRecord=(vm.contactList.length - 1);
             vm.isDetailValid= false;
-            vm.showSummary=false;
+           // vm.showSummary=false;
         };
-
+        vm.setFocus = function(){
+            vm.isFocus = true;
+        }
+        vm.cancelFocus = function(){
+            vm.isFocus = false;
+        }
         /**
          * @ngdoc method - checks if all the roles have been selected
          * @param roleToCheck (optional) returns if a role has been selected.
@@ -208,7 +256,7 @@
             //if no role to check, see if all selected
             if (!vm.contactList) return false;
             for (var i = 0; i < vm.contactList.length; i++) {
-                if (vm.contactList[i].addressRole[roleToCheck] == true) {
+                if (vm.contactList[i].addressRole[roleToCheck] === true) {
                     //don't count it if it is the existing record
                     if(vm.contactList[i].contactId!==recordID) {
                         rolesSelected = rolesSelected + 1;
@@ -225,7 +273,7 @@
         vm.disableAddContact = function () {
             //TODO don't hard code length?
             if(!vm.contactList) return false; //should never happen
-            return (!(vm.contactList.length < 5 && vm.isDetailValid))
+            return (!vm.isDetailValid) // remove record limit - vm.contactList.length < 5 &&
 
         };
 
@@ -237,7 +285,8 @@
         vm.isAllContactRolesSelected=function(){
             var rolesSelected = 0;
             var repPrimarySelected=false;
-            var repSecondarySelected=false;
+            // var repSecondarySelected=false;
+           var importerSelected=false;
 
             if (!vm.contactList) return false;
           var companyRole= vm.companyService.createContactRole();
@@ -249,9 +298,9 @@
                    var attrValue = obj[key];
                    if (attrValue && companyRole.hasOwnProperty(attrName)) {
                        rolesSelected++;
-                       if(key==="repPrimary") repPrimarySelected=true;
-                       if(key==="repSecondary") repSecondarySelected=true;
-
+                       // if(key==="repPrimary") repPrimarySelected=true;
+                       // if(key==="repSecondary") repSecondarySelected=true;
+                      if(key==="importer") importerSelected=true;
                    }
                }
            }
@@ -259,11 +308,33 @@
                 return true;
             }
             //primary has to be selected at least
-            if (rolesSelected === (numKeys - 1) && (repPrimarySelected && !repSecondarySelected)) {
+           // if ((rolesSelected === (numKeys - 1) || rolesSelected === (numKeys - 2)) && (repPrimarySelected && (!repSecondarySelected || !importerSelected))) {
+            if ((rolesSelected === (numKeys - 1) || rolesSelected === (numKeys - 2)) && (repPrimarySelected )) {
                 return true;
             }
 
             return false;
+        };
+
+        vm.isImpCompanySelected = function () {
+            var i = 0;
+            var j = 0;
+            if (Array.isArray(vm.addrImpCompanyName) && vm.addrImpCompanyName.length > 0) {
+                for (i = 0; i < vm.addrImpCompanyName.length; i++) {
+                    for (j = 0; j < vm.contactList.length; j++) {
+                        if(vm.addrImpCompanyName[i] === vm.contactList[j].impCompanyName){
+                            break;
+                        }
+                    }
+
+                    if (j >= vm.contactList.length)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 

@@ -6,7 +6,7 @@
     'use strict';
 
     angular
-        .module('addressRole', [])
+        .module('addressRole', ['hpfbConstants',  'alertModule'])
 })();
 
 (function () {
@@ -26,20 +26,33 @@
                 isContact: '<',
                 alreadySelected: '&',
                 isAmend: '<',
+                htIndxList: '<',
                 legendText: '@',
                 importerUpdated: '&',
-                updateErrorSummary: '&'
-
+                deselectImporter: '&',
+                updateErrorSummary: '&',
+                inUseFlag:'<'
             }
         });
 
-    addressRoleCtrl.$inject = ['$scope'];
-    function addressRoleCtrl($scope) {
+    addressRoleCtrl.$inject = ['ENGLISH','$scope','$translate'];
+    function addressRoleCtrl(ENGLISH,$scope, $translate) {
 
         var vm = this;
         vm.isReq = true;
         vm.isSelected = ""; //checkbox causes issues. Store in text
         vm.isEditable = true;
+        vm.inUser = false;
+        vm.alerts = [false, false];
+        vm.lang = $translate.proposedLanguage() || $translate.use();
+        vm.showCMError = false;
+        vm.duplicateRole=[
+            {type: "duplicateRole", displayAlias: "TYPE_DUPLICATEROLE"}
+        ];
+        vm.impCompanyInUse=[
+            {type: "impCompanyInUse", displayAlias: "COMPANY_IN_USE"}
+        ];
+
         vm.roleModel = {
             manufacturer: false,
             mailing: false,
@@ -56,6 +69,7 @@
                 vm.roleModel = vm.record.addressRole;
                 vm.oneSelected();
             }
+            _setIdNames();
         };
         vm.$onChanges = function (changes) {
             if (changes.record) {
@@ -70,15 +84,14 @@
         };
         /**
          * Checks all the controls and updates the error state
-         *
+         * todo: to update this method to use dynamic control name ??
          */
         function checkAllControlsForDuplicates() {
             if (!vm.roleForm) return;
             vm.checkForDuplicates(vm.roleForm.mailing, 'mailing');
             vm.checkForDuplicates(vm.roleForm.billing, 'billing');
-            vm.checkForDuplicates(vm.roleForm.importer, 'importer');
             vm.checkForDuplicates(vm.roleForm.repPrimary, 'repPrimary');
-            vm.checkForDuplicates(vm.roleForm.repSecondary, 'repSecondary');
+            // vm.checkForDuplicates(vm.roleForm.repSecondary, 'repSecondary');
             vm.checkForDuplicates(vm.roleForm.manufacturer, 'manufacturer');
             vm.updateErrorSummary();
         }
@@ -86,8 +99,17 @@
 
         vm.updateImporterState = function (ctrl, toCheck) {
             vm.oneSelected(ctrl, toCheck);
-            vm.importerUpdated({state: vm.roleModel.importer})
+            vm.importerUpdated({state: vm.roleModel.importer});
+            // todo: set manu role input untouch ??
+            checkAllControlsForDuplicates();
         };
+
+        vm.updateOtherState = function (ctrl, toCheck) {
+            var result = vm.oneSelected(ctrl, toCheck);
+            vm.deselectImporter({state: vm.roleModel.manufacturer});
+            //vm.deselectImporter({state: vm.roleModel.manufacturer || vm.roleModel.mailing || vm.roleModel.billing})
+        };
+
 
         /**
          *
@@ -97,7 +119,11 @@
          */
         vm.oneSelected = function (ctrl, toCheck) {
             var obj = vm.roleModel;
-            vm.checkForDuplicates(ctrl, toCheck);
+
+                if(toCheck !== 'importer') {
+                    vm.checkForDuplicates(ctrl, toCheck);
+                }
+
             for (var key in obj) {
                 var attrName = key;
                 var attrValue = obj[key];
@@ -150,6 +176,55 @@
             }
             return false
         };
+
+        /**
+         * Closes the instruction alerts
+         * @param value
+         */
+        vm.closeAlert = function (value) {
+            if (angular.isUndefined(value)) return;
+            if (value < vm.alerts.length) {
+                vm.alerts[value] = false;
+            }
+        };
+
+        /*
+        Makes an instruction visible baseed on an index passed in
+        Index sets the UI state in the alerts array
+         */
+        vm.addInstruct = function (value) {
+
+            if (angular.isUndefined(value)) return;
+            if (value < vm.alerts.length) {
+                vm.alerts[value] = true;
+            }
+        };
+
+        /**
+         * Determines if the current language is french
+         * @returns {boolean}
+         */
+        vm.isFrench=function(){
+            return(vm.lang!== ENGLISH);
+        };
+
+        function _setIdNames() {
+            // var scopeId= "_" + vm.legendText + "_"+  $scope.$id;
+            var scopeId= "_"+  $scope.$id;
+            vm.fieldsetId = "fs_roleMissing" + "_"+  $scope.$id;
+            vm.roleMissingId = "roleMissing" + "_"+  $scope.$id;
+            vm.contactRoleMissingId = "contactRoleMissing" + "_"+  $scope.$id;
+            vm.chkManuId = "manufacturer" +scopeId;
+            vm.chkMailId = "mailing" +scopeId;
+            vm.chkBillId = "billing" +scopeId;
+            vm.chkManuContactId = "contactManufacturer" + scopeId;
+            vm.chkMailContactId = "contactMailing" + scopeId;
+            vm.chkBillContactId = "contactBilling" + scopeId;
+            vm.chkImpId = "chk-importer" +scopeId;
+            vm.chkRePrimId = "repPrimary" +scopeId;
+            vm.chkRepSecId = "repSecondary" +scopeId;
+        }
+
 
     }//end controller
 

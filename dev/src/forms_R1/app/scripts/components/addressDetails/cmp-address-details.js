@@ -36,7 +36,8 @@
                 isAmend: '<',
                 updateErrorSummary:'&',
                 fieldSuffix:'<',
-                countryEditable:'<'
+                countryEditable:'<',
+                updateCountry:'<'
             }
         });
     addressCtrl.$inject = ['getCountryAndProvinces','$translate','CANADA','USA','$scope'];
@@ -54,6 +55,7 @@
             street: "",
             city: "",
             country: "",
+            countryHtml: "",
             countryDisplay:"",
             stateLov: "",
             stateText: "",
@@ -65,12 +67,15 @@
 
         vm.usaZipCode = '^[0-9]{5}(?:-[0-9]{4})?$';
         vm.hideProvinceText = false;
+        vm.showProvince = false;
+        vm.showState = false;
         vm.countryList= getCountryAndProvinces.getCountries();
         vm.fdId="";
        // vm.postalError="MSG_ERR_POSTAL";
         vm.requiredOnly = [{type: "required", displayAlias: "MSG_ERR_MAND"}];
-        vm.postalErrorList = [{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "MSG_ERR_POSTAL"}];
-
+        vm.postalErrorList = [{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "TYPE_PATTERN"}];
+        vm.provStateErrorName = "PROVSTATE";
+        vm.focusOnProvinceState = false;
         vm.$onInit = function () {
 
             if (vm.addressRecord) {
@@ -98,12 +103,16 @@
             if (changes.isAmend) {
                 vm.isEditable = changes.isAmend.currentValue;
             }
-            if(changes.fieldSuffix){
-                vm.fldId=changes.fieldSuffix.currentValue;
-                if(!vm.fldId){
-                    vm.fldId="";
+            if(changes.fieldSuffix) {
+                vm.fldId = changes.fieldSuffix.currentValue;
+                if (!vm.fldId) {
+                    vm.fldId = "";
                 }
             }
+             if(changes.updateCountry){
+                 vm.countryChanged();
+             }
+
             if(changes.countryEditable){
                 vm.countryIsEditable=changes.countryEditable.currentValue;
                 if(angular.isUndefined(vm.countryIsEditable)){
@@ -115,15 +124,28 @@
          * Updates the display value for the object for summary display
          */
         vm.countryChanged=function(){
-            vm.addressModel.countryDisplay=vm.addressModel.country.id;
-            vm.provListLabel = getProvinceListLabel();
-            vm.postalLabel = getPostalLabel();
-            vm.isPostalRequired = isPostalRequiredFn();
-            vm.provinces = getProvinceStateList();
-            vm.hideProvinceText = getProvinceTextState();
-            vm.postalPattern = getPostalPattern();
-            vm.hideProvinceDdl = !vm.hideProvinceText;
-            vm.isCountryCanada();
+           // console.log("jang test:" + vm.addressModel.country.id);
+            if( vm.addressModel.country.id !== undefined && (vm.addressModel.country.en === vm.addressModel.countryHtml || vm.addressModel.country.fr === vm.addressModel.countryHtml)) {
+                vm.addressModel.countryDisplay = vm.addressModel.country.id;
+                vm.provListLabel = getProvinceListLabel();
+                vm.postalLabel = getPostalLabel();
+                vm.isPostalRequired = isPostalRequiredFn();
+                vm.provinces = getProvinceStateList();
+                vm.hideProvinceText = getProvinceTextState();
+                vm.postalPattern = getPostalPattern();
+                vm.hideProvinceDdl = !vm.hideProvinceText;
+                vm.isCountryCanada();
+            }
+            else {
+                vm.addressModel.countryHtml = "";
+                vm.addressModel.countryDisplay = "";
+                vm.isPostalRequired = false;
+                vm.hideProvinceText = false;
+                vm.showProvince = false;
+                vm.showState = false;
+                vm.hideProvinceDdl = !vm.hideProvinceText;
+                vm.postalLabel = getPostalLabel();
+            }
             vm.updateErrorSummary();
         };
 
@@ -133,10 +155,10 @@
               return false;
           }
            else if(vm.addressModel.country.id===CANADA){
-              vm.postalErrorList = [{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "MSG_ERR_POSTAL"}];
+              vm.postalErrorList = [{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "TYPE_PATTERN"}];
                 return true;
             }else{
-              vm.postalErrorList = [{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "MSG_ERR_ZIP"}];
+              vm.postalErrorList = [{type: "required", displayAlias: "MSG_ERR_MAND"},{type: "pattern", displayAlias: "TYPE_PATTERN"}];
             }
             return false
         };
@@ -200,11 +222,18 @@
         var getProvinceStateList = function () {
 
             if (vm.addressModel.country.id === CANADA) {
+                vm.showProvince = true;
+                vm.showState = false;
                 return getCountryAndProvinces.getProvinces();
 
             }
             else if (vm.addressModel.country.id === USA) {
+                vm.showProvince = false;
+                vm.showState = true;
                 return getCountryAndProvinces.getUSStates();
+            } else {
+                vm.showProvince = false;
+                vm.showState = false;
             }
         };
 
@@ -234,14 +263,40 @@
 
         function _setIdNames() {
             var scopeId = vm.fldId+ "_" + $scope.$id;
-            vm.streetId = "street" + scopeId;
-            vm.cityId = "city" + scopeId;
-            vm.countryId = "country" + scopeId;
+            vm.streetId = "STREET" + scopeId;
+            vm.cityId = "CITY" + scopeId;
+            vm.countryId = "COUNTRY" + scopeId;
             vm.stateTextId = "proveState" + scopeId;
-            vm.stateListId = "provinceList" + scopeId;
+            vm.stateListId = "state" + scopeId;
+            vm.provinceListId = "province" + scopeId;
             vm.postalId = "postal" + scopeId;
+            vm.zipId = "zip" + scopeId;
         }
-
+        vm.countryChange = function() {
+            var found = false;
+            for(var i = 0; i < vm.countryList.length; i++) {
+                var option =vm.countryList[i];
+                if(option[vm.lang] === vm.addressModel.countryHtml) {
+                    vm.addressModel.country = option;
+                    found = true;
+                    break;
+                }
+            }
+            if( ! found ){
+                vm.addressModel.countryHtml = "";
+                if(vm.addressModel.country != "" && vm.addressModel.country.id != ""){
+                    vm.addressModel.country = {};
+                }
+                vm.addressModel.countryDisplay = "";
+            }
+            vm.countryChanged();
+        }
+        vm.countryTabKey = function(){
+            vm.focusOnProvinceState = true;
+        }
+        vm.leaveProvinceState = function(){
+            vm.focusOnProvinceState = false;
+        }
         // component only has one field, just watch this field for changes to update error summary
         $scope.$watch('adr.addressForm.$error', function () {
             vm.updateErrorSummary();

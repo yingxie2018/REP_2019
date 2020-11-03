@@ -29,7 +29,12 @@
                 isRoleSelected: '&', /* determines if a role has been selected in another record*/
                 recordIndex: '<', /* used to obtain record index, controlled by list */
                 errorSummaryUpdate: '&', /* used to message that a parent errorSummary needs updating */
-                showErrorSummary: '<'
+                showErrorSummary: '<',
+                updateErrorSummary:'&', //update the parent error summary
+                htIndxList: '<',
+                isFocus: '<',
+                cancelFocus: '&',
+                addrImpCompanyName: '<'
             }
         });
     contactRecCtrl.$inject = ['$scope'];
@@ -52,6 +57,7 @@
                 manufacturer: false,
                 mailing: false,
                 billing: false,
+                importer: false,
                 repPrimary: false,
                 repSecondary: false
             },
@@ -63,10 +69,11 @@
             title: "",
             phone: "",
             PhoneExt: "",
-            fax: ""
+            fax: "",
+            addrImpCompanyName: ""
         };
         vm.alias={
-            "roleMissing": {
+            "contactRoleMissing": {
                 "type": "fieldset",
                 "parent": "fs_roleMissing"
             },
@@ -85,8 +92,7 @@
 
         vm.$onInit = function () {
             vm.updateErrorSummaryState();
-            vm.showSummary = false;
-
+            vm.contactModel.focusOnFirstName = vm.isFocus;
         };
         /**
          * Due to binding with table expander this method does not get called
@@ -102,6 +108,7 @@
             }
             if (changes.isAmend) {
                 vm.formAmend = changes.isAmend.currentValue;
+                vm.contactModel.amendRecord = changes.isAmend.currentValue;
                 vm.setEditable();
             }
             /** Messaging for Showing the error summary **/
@@ -134,13 +141,16 @@
             if (addressRoles.mailing) {
                 result = result + " MAIL"
             }
+           if (addressRoles.importer) {
+            result = result + " IMP"
+           }
             if (addressRoles.repPrimary) {
                 result = result + " REP1"
             }
-            if (addressRoles.repSecondary) {
-                result = result + " REP2"
-            }
-            return result
+            // if (addressRoles.repSecondary) {
+            //     result = result + " REP2"
+            // }
+            return result;
         }
 
 
@@ -149,7 +159,8 @@
          */
         vm.delete = function () {
             vm.onDelete({contactId: vm.contactModel.contactId});
-            vm.errorSummaryUpdate()
+            vm.updateErrorSummary();
+            vm.cancelFocus();
         };
         /* @ngdoc method -discards the changes and reverts to the model
          *
@@ -161,8 +172,10 @@
             vm.setEditable();
             //since we are reverting back to the last save should be pristine
             vm.contactRecForm.$setPristine();
+            if (vm.contactModel) {
+                vm.onUpdate({contact: vm.contactModel});
+            }
             vm.isDetailValid({state: vm.contactRecForm.$valid});
-            vm.savePressed = false;
             vm.errorSummaryUpdate();
         };
 
@@ -171,7 +184,9 @@
             angular.extend(aRole, newRole);
             vm.contactModel.addressRole = aRole;
             vm.updateContactModel2();
+            vm.showRoutingId();
             vm.setEditable();
+            vm.showAddrImpCompanyName();
         };
         /**
          * @ngdoc method -Updates the parent on whether this record is valid or not
@@ -189,6 +204,11 @@
             }
         }, true);
 
+        $scope.$watch('contactRec.contactRecForm.$error', function () {
+            vm.updateErrorSummaryState();
+            vm.updateErrorSummary();
+        }, true);
+
         /**
          * Updates the contact model used by the save button
          */
@@ -196,13 +216,17 @@
             vm.contactModel.roleConcat = _getRolesConcat();
             if (vm.contactRecForm.$valid) {
                 // vm.contactModel.isDetailValid=true;
+                if(! vm.contactModel.addressRole.importer){
+                    vm.contactModel.impCompanyName = '';
+                }
                 vm.isDetailValid({state: true});
                 vm.contactRecForm.$setPristine();
                 vm.onUpdate({contact: vm.contactModel});
-                vm.savePressed = false;
+                vm.showSummary = false;
+                vm.contactModel.focusOnFirstName = false;
                 vm.errorSummaryUpdate(); //updating parent
             } else {
-                vm.savePressed = true;
+                vm.showSummary = true;
                 vm.errorSummaryUpdate(); //updating parent
                 vm.updateErrorSummaryState(); //updating current
                 vm.focusOnSummary();
@@ -224,7 +248,7 @@
          */
         vm.showErrors = function () {
 
-            return ((vm.savePressed || vm.showSummary));
+            return (( vm.showSummary));
         };
         /**
          * @ngdoc method used to determine if record should be editable. Used for amend button
@@ -236,6 +260,28 @@
                 vm.isEditable = true
             } else {
                 vm.isEditable = vm.formAmend && vm.contactModel.amendRecord;
+            }
+        };
+        vm.showRoutingId = function () {
+            vm.contactModel.roleConcat = _getRolesConcat();
+            if (vm.contactModel.roleConcat.indexOf(' MFR') > -1 || vm.contactModel.roleConcat.indexOf(' MAIL') > -1
+                || vm.contactModel.roleConcat.indexOf(' IMP') > -1
+            ) {
+                return 0;
+            } else {
+                vm.contactModel.routingId = '';
+                return -1;
+            }
+        }
+
+        vm.showAddrImpCompanyName = function () {
+            //TODO
+            vm.contactModel.roleConcat = _getRolesConcat();
+            if (vm.contactModel.roleConcat.indexOf(' IMP') > -1) {
+                return 0;
+            } else {
+                vm.contactModel.addrImpCompanyName = '';
+                return -1;
             }
         }
 

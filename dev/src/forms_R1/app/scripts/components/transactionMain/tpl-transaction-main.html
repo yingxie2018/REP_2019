@@ -1,76 +1,107 @@
 <div>
-    <ng-form id="reg-transaction-form" name="main.transactionEnrolForm" translate-cloak="cloak-class"
+    <ng-form  name="main.transactionEnrolForm" id="{{::main.formId}}" data-translate-cloak="cloak-class"
              novalidate>
+        <span id="privacy"></span>
+        <div class="module-attention">
+            <h2 class="panel-title mrgn-tp-sm mrgn-bttm-sm">{{::'PRIVACY_NOTICE_STATEMENT'|translate}}</h2>
+            <section data-ng-if="!main.isFrench()" data-ng-include="'app/scripts/templates/common/tpl-privacy-statement-en.html'"></section>
+            <section data-ng-if="main.isFrench()" data-ng-include="'app/scripts/templates/common/tpl-privacy-statement-fr.html'"></section>
+        </div>
+        <div><br></div>
+        <span id="security"></span>
+        <div class="module-attention">
+            <h2 class="panel-title mrgn-tp-sm mrgn-bttm-sm">{{::'SECURITY_DISCLAIMER'|translate}}</h2><br>
+            <section data-ng-if="!main.isFrench()" data-ng-include="'app/scripts/templates/common/tpl-security-disclaimer-en.html'"></section>
+            <section data-ng-if="main.isFrench()" data-ng-include="'app/scripts/templates/common/tpl-security-disclaimer-fr.html'"></section>
+        </div>
+        <span id="instructions"></span>
+        <aside class="wb-fnote" role="note">
+            <h2>{{::'FOOTNOTE_INSTRUCTION'|translate}}</h2>
+            <cmp-transaction-help-text ht-indx-list="main.indexList">
+            </cmp-transaction-help-text>
+            <!--<section data-ng-if="!main.isFrench()" data-ng-include="'app/scripts/templates/transaction/tpl-transaction-footnote-en.html'"></section>-->
+            <!--<section data-ng-if="main.isFrench()" data-ng-include="'app/scripts/templates/transaction/tpl-transaction-footnote-fr.html'"></section>-->
+        </aside>
+        <span id="main"></span>
+        <div class="row mrgn-tp-md">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <span id="securityInfo" class="fa fa-shield fa-sm"><strong>&nbsp;{{::'PROTECTED_B'|translate}}</strong></span>
+                </div>
+            </div>
+        </div>
         <section class="panel panel-primary mrgn-tp-lg">
             <header class="panel-heading clearfix">
-                <div class="btn-group pull-right">
-                    <button title="{{::'EXPAND'|translate}} {{::'HELP_FILE_LOAD'|translate}}" class="btn-xs rep-help-button"
-                            id="startdate-picker-toggle" ng-click="main.addInstruct(0)"><span
-                            class="fa fa-question-circle fa-2x"></span>
-                    </button>
-                </div>
-                <h2 class="panel-title">{{'LOAD_TRANSACTION'|translate}}</h2>
+                <h2 class="panel-title col-md-8">{{'LOAD_TRANSACTION'|translate}}
+                    <sup id="tr1_ref">
+                        <a class="fn-lnk" href="#tr1"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::main.indexList.loadFileInx}}</a>
+                    </sup>
+                </h2>
             </header>
             <div class="panel-body">
-                <div>
-                    <cmp-alert  ui-state="main.alerts[0]" msg="HELP_FILE_LOAD" update-state="main.closeAlert(0)" type="alert-info">
-                        <section aria-live="assertive">
-                            <div ng-if="!main.isFrench()"
-                                 ng-include="'app/scripts/templates/transaction/tpl-transaction-file-en.html'">
-                            </div>
-                            <div ng-if="main.isFrench()"
-                                 ng-include="'app/scripts/templates/transaction/tpl-transaction-file-fr.html'">
-                            </div>
-                        </section>
-                    </cmp-alert>
-
-                </div>
                 <div class="col-md-12">
-                    <hpfb-file-select update-model-root="main.showContent(fileContent) "
+                    <hpfb-file-select update-model-root="main.showContent(fileContent)"
                                       root-elem="{{main.rootTag}}"></hpfb-file-select>
                 </div>
             </div>
         </section>
-        <div>
-            <cmp-transaction-info transaction-root="main.transaction" show-errors="main.showErrors()"
+            <div id="master-error">
+                <cmp-error-summary form-ref="main.transactionEnrolForm"
+                                   form-preamble="REG_TRANSACT" exclusion-list=main.exclusions
+                                   name-suffix="main.transactionEnrolForm" set-heading-level="h2" form-id="main.formId"
+                                   make-focused="main.focusSummary" alias-list="main.alias" show-errors="main.savePressed"
+                                   update-errors="main.updateSummary">
+                </cmp-error-summary>
+            </div>
+            <cmp-transaction-info transaction-root="main.transaction" show-error-summary="main.savePressed"
                                   deprecate-sequence="main.transactionService.deprecateSequenceNumber()"
                                   reset-ectd="main.transactionService.resetEctdSection()" language="main.lang"
                                   get-transaction="main.transactionService.getNewTransaction(main.transaction.isEctd==='Y')"
+                                  get-rep-contact="main.transactionService.getNewRepContact()"
+                                  get-fee="main.transactionService.createFeeDetails()"
                                   set-starting-sequence="main.setSequenceNumber(startVal)"
-                                  sequence-updated="main.sequenceUpdated"
+                                  sequence-updated="main.sequenceUpdated" update-error-summary="main.updateErrorSummaryState()"
                                   get-current-sequence="main.transactionService.getCurrentSequence()"
-                                  get-rep-contact="main.transactionService.getNewRepContact()"></cmp-transaction-info>
+                                  get-rep-contact="main.transactionService.getNewRepContact()"
+                                  is-file-loaded="main.isFileLoaded" ht-indx-list="main.indexList"
+                                  is-final="main.isFinal">
+            </cmp-transaction-info>
             <div class="row">
-                <div class="form-group col-md-3">
-                    <button class="btn btn-default btn-lg active" formnovalidate ng-click="main.saveJson()">
-                        {{'SAVE_WORK'|translate}}
-                    </button>
+                <div class="col-md-12">
+                <div class="col-md-12">
+                    <label for="{{::main.privacyStatementID |translate}}" class="required">
+                        <input type="checkbox"
+                               data-ng-model="main.privacyStat"
+                               class="required"
+                               name="{{::main.privacyStatementID |translate}}"
+                               id="{{::main.privacyStatementID |translate}}"
+                               required />
+                        {{::"PRIVACY_STATEMENT"|translate}}
+                        <strong class="required"> {{::"REQUIRED" |translate}}</strong>
+                        <cmp-error-message field-name="main.privacyStatementID"
+                                           form-ref="main.transactionEnrolForm"
+                                           show-error="main.showError(main.transactionEnrolForm[main.privacyStatementID])"
+                                           error-types="main.requiredOnly">
+                        </cmp-error-message>
+                    </label>
                 </div>
-                <div class="form-group col-md-3">
-                    <button class="btn  btn-primary btn-lg active" formnovalidate id="btn_xmlSave"
-                            ng-click="main.saveXML()"
-                            ng-disabled="main.transactionEnrolForm.$invalid">{{'GENERATE_FINAL'|translate}}
-                    </button>
-                    <button title="{{::'EXPAND'|translate}} {{::'SAVE_INSTRUCT'|translate}}" class="btn rep-help-button-primary btn-xs"
-                            id="save-instructions-toggle" ng-click="main.addInstruct(1)"><span
-                            class="fa fa-question-circle fa-2x"></span>
-                    </button>
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-10">
+                <div class="form-group col-md-12">
+                    <button class="btn btn-default btn-lg active mrgn-rght-sm"  id="btn_jsonSave" formnovalidate data-ng-click="main.saveJson()">
+                        {{::'SAVE_WORKING'|translate}}
+                    </button>
+                    <button class="btn  btn-primary btn-lg active" formnovalidate id="btn_xmlSave"
+                            data-ng-click="main.saveXML()"
+                            >{{::'GENERATE_FINAL'|translate}}
+                    </button>
+                    <sup id="tr17_ref">
+                        <a class="fn-lnk" href="#tr17"><span class="wb-inv">{{::'INSTRUCTION'|translate}}&nbsp;</span>{{::main.indexList.genXmlInx}}</a>
+                    </sup>
 
-                    <cmp-alert  ui-state="main.alerts[1]" msg="SAVE_INSTRUCT" update-state="main.closeAlert(1)" type="alert-info">
-                        <section aria-live="assertive">
-                            <div ng-if="!main.isFrench()"
-                                 ng-include="'app/scripts/templates/transaction/tpl-transaction-save-en.html'">
-                            </div>
-                            <div ng-if="main.isFrench()"
-                                 ng-include="'app/scripts/templates/transaction/tpl-transaction-save-fr.html'">
-                            </div>
-                        </section>
-                    </cmp-alert>
                 </div>
             </div>
     </ng-form>
+    <!--<pre>{{main.transaction|json}}</pre>-->
 </div>

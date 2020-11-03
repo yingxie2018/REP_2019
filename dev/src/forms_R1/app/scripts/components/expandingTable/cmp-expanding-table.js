@@ -20,17 +20,20 @@
             transclude:true,
             bindings: {
                 title: '@', /*deprecated*/
+                preId: '@',
                 listItems: '<',
                 columnDef:'<',
                 disableSelection:'<',
+                isRequiredRecord:'<',
+                isInternal:'<',
                 selectRecord: '<',
                 resetToCollapsed: '<',
                 disableErrColumn:'@',
-                transcludeName:'@'
+                tname:'@'
             }
         });
-    expandingTableCtrl.$inject = ['$filter'];
-    function expandingTableCtrl($filter) {
+    expandingTableCtrl.$inject = ['$filter','$scope'];
+    function expandingTableCtrl($filter,$scope) {
         var vm = this;
         vm.focused = false;
         vm.columnDefinitions={};
@@ -41,7 +44,8 @@
         vm.numberCols=1;
         vm.disableErrorCol=false;
         vm.dayDataCollapse = _createArray(0, true);
-        vm.formName="";
+        vm.formName="expandTblCtrl.transcludeForm";
+
         vm.$onInit = function () {
             if(vm.listItems) {
                 vm.dayDataCollapse = _createArray(vm.listItems.length, true);
@@ -49,7 +53,7 @@
         };
 
         vm.getExpandedState = function (row) {
-            if (row === vm.tableRowIndexCurrExpanded) {
+            if (row === vm.tableRowIndexCurrExpanded || !(vm.dayDataCollapse[row] && (! vm.transcludeForm[row] || vm.transcludeForm[row].$valid))) {
                 return true;
             }
             return false
@@ -57,10 +61,6 @@
 
         vm.$onChanges = function (changes) {
 
-            if(changes.transcludeName){
-
-                vm.formName=changes.transcludeName.currentValue;
-            }
 
             if (changes.listItems) {
                 if(vm.listItems) {
@@ -70,6 +70,13 @@
                     vm.dayDataCollapse = _createArray(0, true);
                 }
                 vm.resetTableRow();
+            }
+
+            if(changes.tname){
+                //if the binding is not defined will fire and be null
+                if(changes.tname.currentValue) {
+                    vm.formName = changes.tname.currentValue;
+                }
             }
 
             /**
@@ -106,6 +113,7 @@
             if(changes.disableErrColumn){
                 vm.disableErrorCol=changes.disableErrColumn.currentValue;
                 vm.numberCols=vm.columnDef.length;
+                vm.disableErrorCol=true;
                 _setNumberColumns();
             }
 
@@ -117,7 +125,7 @@
                 vm.numberCols= vm.numberCols+1;
             }else{
                 //caret + error
-                vm.numberCols= vm.numberCols+2;
+             //   vm.numberCols= vm.numberCols+2;
             }
         }
 
@@ -190,6 +198,14 @@
          function _createArray(arraySize,initialVal){
          var anArray = [];
          for (var i = 0; i < arraySize; i++) anArray.push (initialVal);
+         // to fix tissueFluids didn't reocrd didn't close properly, rollback previous bug fix chnges
+         // {
+         //     if (vm.transcludeForm && vm.transcludeForm[i] && vm.transcludeForm[i].$invalid) {
+         //         anArray.push (false);
+         //     } else {
+         //         anArray.push(initialVal);
+         //     }
+         // }
          return anArray
          }
 
@@ -244,7 +260,34 @@
                     }
                 }
             }
-        }
+        };
+
+        vm.isRequiredRecordSet = function () {
+            if (vm.isRequiredRecord && !vm.isInternal) {
+                return true;
+            }
+            return false;
+        };
+
+        vm.isRecordShowsOutside = function (row) {
+            if (vm.isInternal) {
+                return !vm.dayDataCollapse[row];
+            } else {
+                if(vm.transcludeForm[row] && vm.transcludeForm[row].$invalid) {
+                    vm.dayDataCollapse[row] = false;
+                }
+                return (!(vm.dayDataCollapse[row] && (! vm.transcludeForm[row] || vm.transcludeForm[row].$valid)) ||
+                    vm.isRequiredRecordSet());
+            }
+        };
+
+        vm.isRecordShowsInside = function (row) {
+            if (!vm.isInternal) {
+                return true;
+            } else {
+                return !(vm.dayDataCollapse[row] && vm.transcludeForm[row].$valid);
+            }
+        };
 
 
     }

@@ -31,14 +31,17 @@
                 makeFocused: '<',
                 setHeadingLevel: '@',
                 exclusionList: '<',
-                formId: '@',
-                aliasList: '<'
+                transcludeList:'<', //used for expander lists, the name of an error summary in an expanding table entry
+                formId: '<',
+                aliasList: '<',
+                expandRecord:'&',
+                selectTab:'&'
 
             }
         });
-    errorSummaryController.$inject = ['$scope', '$filter'];
+    errorSummaryController.$inject = ['$scope','$location','$anchorScroll'];
 
-    function errorSummaryController($scope, $filter) {
+    function errorSummaryController($scope,$location,$anchorScroll) {
         var vm = this;
         vm.parentRef = null;
         vm.errorArray = [];
@@ -51,6 +54,7 @@
 
         vm.exclusions={};
         vm.alias={};
+        vm.transcludeNames={};
 
         vm.headingPreamble = "";
         vm.headerLevel = "";
@@ -100,11 +104,9 @@
 
             if (changes.updateErrors) {
                 if (vm.formRef) {
-                    // console.log(vm.formRef.$error);
                     //pass in the form name and the error object
                     //should I run it if hidden?
                     if (vm.isVisible) {
-                        //console.log(vm.formRef.$error)
                         vm.getErrorsSumm(vm.formRef.$error, vm.formRef.$name);
                     }
                 }
@@ -115,11 +117,18 @@
                 }
             }
             if (changes.formId) {
-
+                /* used for the jquery ordering. This gives the starting id **/
                 vm.startFormId = changes.formId.currentValue;
             }
+            if(changes.transcludeList){
+                if(changes.transcludeList.currentValue) {
+                    vm.transcludeNames = changes.transcludeList.currentValue;
+                }
 
+            }
         };
+
+
         /***
          * Determines if the summary is visible
          * @returns {boolean|*|Array}
@@ -132,6 +141,66 @@
             }
             return (summaryIsVisible);
         };
+
+        /**
+         * Used for the error summary to expand a record
+         * @param errorRecord
+         */
+        vm.scrollTo=function(errorRecord){
+            var hashId="";
+            if(!errorRecord) return;
+            if(errorRecord.isSummary){
+                hashId='errors-summary-' + errorRecord.name;
+            }else{
+                hashId=errorRecord.name;
+            }
+            vm.expandRecord({index: errorRecord.exIndex});
+            // console.log("jangyoung:" + hashId );
+            $location.hash(hashId);
+            $anchorScroll();
+        };
+
+        vm.selectVisibleTab=function(errorRecord){
+            var hashId='errors-summary-'+errorRecord.name;
+
+            vm.selectTab({index:errorRecord.tabId});
+        }
+
+        /**
+         * Checks if an error is a link to a summary record
+         * It is a summart is isSummmary is true and it is not in a tab. Tab is handled separately
+         * @param errorRecord
+         * @returns {boolean|*}
+         */
+        vm.isSummaryLink=function(errorRecord){
+
+            return(errorRecord.isSummary && (!angular.isDefined(errorRecord.toExpand)) &&(angular.isDefined(errorRecord.tabId) && parseInt(errorRecord.tabId)<0));
+        };
+
+        /**
+         * Checks if an error points to a list
+         *
+         * @param errorRecord
+         * @returns {boolean|*}
+         */
+        vm.isList=function(errorRecord){
+            return(errorRecord.name.indexOf('list_') >= 0);
+        }
+
+        /**
+         * Checks if an error reoord is a summary in a tab. If true, need to click the tab first before focussing on the summary
+         * @param errorRecord
+         * @returns {boolean|*}
+         */
+        vm.isTabLink=function(errorRecord){
+            return(errorRecord.isSummary &&(angular.isDefined(errorRecord.tabId) && parseInt(errorRecord.tabId)>-1));
+        };
+        vm.isExpanderLink=function(errorRecord){
+
+            return angular.isDefined(errorRecord.toExpand);
+        };
+
+
 
         function _isErrorSummaryVisible() {
             return (vm.isVisible && (vm.errorArray && vm.errorArray.length > 0));
@@ -159,12 +228,63 @@
             vm.errorArray = [];
             vm.uniqueErrorList = {};
             _getErr(myformErrors, vm.uniqueErrorList, name);
-
-            var newErrors = _sortErrorsByDomOrder();
-            if (!angular.equals(vm.errorArray, newErrors)) {
-                vm.errorArray = newErrors;
+            _hideRequiredRecordErrors(vm.uniqueErrorList);
+           // console.log( 'vm.uniqueErrorList');
+           // console.log( vm.uniqueErrorList);
+            if(vm.formPreamble == 'COMPANY_FORM'){
+                vm.errorArray = Object.keys(vm.uniqueErrorList).map(function (k) {
+                    return vm.uniqueErrorList[k]
+                });
+                var temp = vm.errorArray[0];
+                for(var i = 0; i< vm.errorArray.length - 1; i++){
+                    vm.errorArray[i] = vm.errorArray[i+1];
+                    if(vm.errorArray[i].type == "required"){
+                        vm.errorArray[i].type = "TYPE_REQUIRED";
+                    }
+                }
+                vm.errorArray[vm.errorArray.length - 1] = temp;
+            }else{
+                var newErrors = _sortErrorsByDomOrder();
+                //  console.log('newErrors');
+                // console.log(newErrors);
+                if (!angular.equals(vm.errorArray, newErrors)) {
+                    vm.errorArray = newErrors;
+                }
             }
         };
+
+        //hide record required error if there are errors in the record
+        function _hideRequiredRecordErrors(errors) {
+            var keys = Object.keys(errors);
+            if (!(keys instanceof Array)) {
+                keys = [keys];
+            }
+            // if (keys.indexOf("lifecycleCtrl.lifecycleDetailsForm") > -1) {
+            //     for (var i = 0; i < keys.length; i++) {
+            //         if (keys[i].indexOf("saveLifeRec") > -1) {
+            //             delete errors[keys[i]];
+            //             break;
+            //         }
+            //     }
+            // }
+            if (keys.indexOf("ingRecCtrl.activeIngForm") > -1) {
+                for (var i = 0; i < keys.length; i++) {
+                    if (keys[i].indexOf("no_active") > -1) {
+                        delete errors[keys[i]];
+                        break;
+                    }
+                }
+            }
+            if (keys.indexOf("ctrCtrl.containerTypeForm") > -1) {
+                for (var i = 0; i < keys.length; i++) {
+                    if (keys[i].indexOf("no_container") > -1) {
+                        delete errors[keys[i]];
+                        break;
+                    }
+                }
+            }
+        }
+
 
         //gets all the errors from error objects
         function _getErr(errorObj, resultsList, parent) {
@@ -172,32 +292,53 @@
             var newList = {};
             for (var i = 0; i < keys.length; i++) {
                 var record = errorObj[keys[i]];
+                //expecting an array
+                if (!(record instanceof Array)) {
+                    record = [record];
+                }
+                for (var j = 0; j < record.length; j++) {
 
-                for (var j = 0; j < record.length; j++)
+                    //configure for the tests
+                    var numIndex=record[j].$name.lastIndexOf("_");
+                    var transcludeName="";
+                    //parse for a transclude name. Used for comparison below
+                    if(numIndex>0) {
+                        transcludeName = record[j].$name.substring(0, numIndex);
+                    }
+                    //case this is a form- assumes format <controlller>.<formName>
                     if (record[j].$invalid === true && record[j].$name.indexOf('.') > 0) {
-
-                        //it is assummed that if it is in the exclusion list it is a summary
+                        //it is assumed that if it is in the exclusion list it is a summary
                         if (vm.exclusions && vm.exclusions.hasOwnProperty(record[j].$name)) {
-                            var result = {};
-                            result[record[j].$name] = {
-                                name: record[j].$name,
-                                type: keys[i],
-                                translateKey: record[j].$name.toUpperCase(),
-                                parent: parent,
-                                concat: parent + '.' + record[j].$name,
-                                isSummary: true
-                            };
-                            angular.merge(resultsList, result);
-
-                        } else {
+                            //only process this as a summary if it is in the exclusions list
+                            var tabIndex=vm.exclusions[record[j].$name].indexOf('tab_');
+                            var tabId=-1;
+                            if(tabIndex>-1){
+                               tabId=vm.exclusions[record[j].$name].substr(tabIndex+4);
+                               tabId=parseInt(tabId)
+                            }
+                            angular.merge(resultsList, _createSummaryRecord(record[j].$name, keys[i], parent,tabId));
+                        }
+                        else {
                             _getErr(record[j].$error, resultsList, record[j].$name);
                         }
-
-                    } else if (record[j].$invalid === true && !resultsList.hasOwnProperty(record[j].$name)) {
-
-                        var result = _processRecord(record[j].$name, keys[i], parent)
+                    }
+                    // case this is a transclude i.e. the expanding table
+                    else if (vm.transcludeNames.hasOwnProperty(transcludeName)) {
+                        var exIndex = record[j].$name.indexOf(transcludeName);
+                        //extract the index it is the string length +1. By convention there is an underscore
+                        var expandIndex = record[j].$name.substring(exIndex+transcludeName.length+1);
+                        //make an object that will cause expand and focus on
+                        angular.merge(resultsList,_createExpanderRecord(record[j].$name,transcludeName,keys[i],parent,expandIndex));
+                    }
+                    else if (record[j].$invalid === true && !resultsList.hasOwnProperty(record[j].$name)) {
+                        var result = _processRecord(record[j].$name, keys[i], parent);
+                        //don't display rewquired text for SAVELIFEREC error
+                        if (result[record[j].$name].translateKey === 'SAVELIFEREC') {
+                            result[record[j].$name].type = '';
+                        }
                         angular.merge(resultsList, result);
                     }
+                }
             }
         }
 
@@ -228,7 +369,6 @@
                 scopeId = "";
             }
             return scopeId;
-
         }
 
         /**
@@ -257,6 +397,9 @@
                         break;
                     case "element":
                         destId = aliasRec.target + "_" + scopeId;
+                        break;
+                    case "elementnoid":
+                        destId = aliasRec.target;
                         break;
                     case "pattern":
                         if (errorType === "pattern") {
@@ -291,29 +434,41 @@
                             errorKey = aliasRec.errorType;
                         }
                         break;
+
+                    case "buttonsearch":
+                        errorKey =  "TYPE_REQUIRED";
+                            $.each($('button', '#' + vm.startFormId), function (k) {
+                            var temp_attr = $(this).attr('id');
+                            if (temp_attr && temp_attr.indexOf(aliasRec.buttonName)>-1) {
+                              destId=temp_attr;
+                            }
+                        });
+                        break;
                     default:
                         console.warn("No type found " + aliasRec.type);
                         break;
                 }
             }
-            result[error_Name] = {
-                name: destId,
-                translateKey: scrubName.toUpperCase(),
-                type: errorKey,
-                parent: parent,
-                concat: parent + '.' + error_Name,
-                isSummary: false
-            };
+            if(! result[error_Name]){
+                result[error_Name] = {
+                    name: destId,
+                    errorName: error_Name,
+                    translateKey: scrubName.toUpperCase(),
+                    type: errorKey,
+                    parent: parent,
+                    concat: parent + '.' + error_Name,
+                    isSummary: false
+                };
+            }
             return result;
         }
 
         //TODO cleanup  this function, inefficient
         function _sortErrorsByDomOrder() {
             var domFieldList = {};
-            var newErrors = [];
             //TODO make angular friendly
             //get all the inputs and assign order index
-            $.each($('input, select ,textarea', '#' + vm.startFormId), function (k) {
+            $.each($('input, select, textarea, fieldset'), function (k) {
                 var temp_attr = $(this).attr('id');
                 if (temp_attr) {
                     domFieldList[temp_attr] = k;
@@ -323,20 +478,33 @@
             //TODO refactor? seems inefficient
             var keyList = Object.keys(domFieldList);
             for (var p = 0; p < keyList.length; p++) {
+                //specifically handled the angular bootstrap ui-select
+                if(keyList[p].indexOf("focusser-")>-1){
+                    //find the parent
+                    var parentName=angular.element(document.querySelector('#'+keyList[p])).parent().attr('name');
+                    if(parentName){
+                        keyList[p]=parentName;
+                    }
+                }
                 if (!vm.uniqueErrorList[keyList[p]]) {
-                    delete domFieldList[keyList[p]];
+                    keyList.splice(p, 1);
+                        p--;
                 }
             }
-            //get all the keys
-            var temp = Object.keys(domFieldList).map(function (k) {
-                return k
-            });
-            //add the keys
             var sortedDomJsonList = {};
-            for (var v = 0; v < temp.length; v++) {
-                sortedDomJsonList[temp[v]] = v;
+            //create a json where the key is the name, and the value is the index (ie the position it should be
+            //this allows lookup by name and gets the index
+            for (var v = 0; v < keyList.length; v++) {
+                //specifically handled no item errors (!String.prototype.startsWith does not support IE)
+                // if(keyList[v].startsWith("no_")){
+                if(keyList[v].indexOf("no_") == 0) {
+                    keyList[v]=keyList[v].replace("no_", "list_");
+                }
+                sortedDomJsonList[keyList[v]] = v;
             }
-            newErrors = Object.keys(vm.uniqueErrorList).map(function (k) {
+
+            //create an array
+            var newErrors = Object.keys(vm.uniqueErrorList).map(function (k) {
                 return vm.uniqueErrorList[k]
             });
             //sort errors
@@ -345,7 +513,7 @@
                 var i = 0;
                 while (i < newErrors.length) {
                     var currRec = newErrors[i];
-                    var targetName = currRec.name;
+                    var targetName = currRec.errorName;
                     var destIndex = sortedDomJsonList[targetName];
                     if (angular.isDefined(destIndex) && destIndex !== i) {
                         var tempRec = angular.copy(newErrors[destIndex]);
@@ -360,7 +528,7 @@
                     }
                 }
             }
-            _sortUnknowns(notDefined, newErrors)
+            _sortUnknowns(notDefined, newErrors);
             return newErrors;
         }
 
@@ -400,6 +568,48 @@
             if (to >= this.length) to = this.length - 1;
             this.splice(to, 0, this.splice(from, 1)[0]);
         };
+
+
+        /**
+         *  Used to create a summary record. Generally used when new forms are defined
+         *  i.e. get a dot syntax of myController.myFormName
+         * @param name- the name to give to the record, and the translate key
+         * @param type - type of error that occured i.e. required etc
+         * @param parent- parent ot this dom object
+         * @param tabID- optional tabId for selecting a tab
+         * @returns {{}}
+         * @private
+         */
+        function _createSummaryRecord(name,type,parent,tabId){
+            var result = {};
+            if(!angular.isDefined(tabId)) tabId=-1;
+            result[name] = {
+                name: name,
+                type: type,
+                translateKey: name.toUpperCase(),
+                parent: parent,
+                concat: parent + '.' + name,
+                tabId:tabId,
+                isSummary: true
+            };
+            return result;
+        };
+
+        function _createExpanderRecord(name,transcludeName,type,parent, expanderIndex){
+            var result = {};
+            result[name] = {
+                name: name,
+                type: type,
+                translateKey: transcludeName.toUpperCase(),
+                parent: parent,
+                concat: parent + '.' + name,
+                isSummary: true,
+                toExpand:true,
+                exIndex:parseInt(expanderIndex)
+            };
+            return result;
+        };
+
     }//end controller
 
 })();

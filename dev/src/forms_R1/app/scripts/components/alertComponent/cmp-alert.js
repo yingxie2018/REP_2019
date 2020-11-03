@@ -21,6 +21,7 @@
             bindings: {
                 uiState: '<',
                 msg: '@',
+                myAnchor: '<',
                 updateState:'&',
                 type:'@'
             },
@@ -35,6 +36,7 @@
         var vm = this;
         vm.alertVisible=false;
         vm.closeMsgAlias="CLOSE_ALERT";
+        vm.anchor = null;
 
         vm.$onInit = function () {
             vm.alertVisible=false;
@@ -49,6 +51,9 @@
             if(changes.uiState){
                 vm.alertVisible=changes.uiState.currentValue;
             }
+            if(changes.myAnchor){
+                vm.anchor=changes.myAnchor.currentValue;
+            }
         };
 
         vm.open=function(){
@@ -58,6 +63,9 @@
 
         vm.close=function(){
             vm.updateState();
+            if (vm.anchor) {
+                document.getElementById(vm.anchor).focus();
+            }
         };
 
         vm.isAlertVisible=function(){

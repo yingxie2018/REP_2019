@@ -16,10 +16,18 @@
 
             return function (options) {
                 var deferred = $q.defer();
+                var envUrl = RELATIVE_FOLDER_DATA + "env.json";
                 var countryUrl = RELATIVE_FOLDER_DATA + "countries.json";
-                var raTypeUrl=RELATIVE_FOLDER_DATA + "raType.json";
+                var raTypeUrl= RELATIVE_FOLDER_DATA + "raType.json";
+                var feeUrl= RELATIVE_FOLDER_DATA + "feeClass.json";
+                var mitigationUrl = RELATIVE_FOLDER_DATA + "mitigationType.json";
                 var resultTranslateList = {};
-                $http.get(countryUrl)
+                $http.get(envUrl)
+                    .then(function (response) {
+                        //PROCESS env data
+                        TransactionLists.setEnv(response.data);
+                        return $http.get(countryUrl);
+                    })
                     .then(function (response) {
                         //PROCESS country list data
                         var newList = _createSortedArrayNAFirst(response.data, options.key);
@@ -27,8 +35,6 @@
                         getCountryAndProvinces.createCountryList(newList);
                         angular.extend(resultTranslateList, translateList);
                         return $http.get(raTypeUrl);
-                        //return $http.get(contactsUrl);
-
                     })
                   .then(function (response) {
                         //PROCESS raType list data
@@ -36,9 +42,25 @@
                         var translateList = _createTranslateList(newList, options.key);
                         TransactionLists.createRaTypes(newList);
                         angular.extend(resultTranslateList, translateList);
-                        //return response.data;
+                      return $http.get(feeUrl);
+                    })
+                    .then(function (response) {
+                        //PROCESS fee  list data
+                        var newList = _createSortedArray(response.data, options.key);
+                        var translateList = _createTranslateList(newList, options.key);
+                        TransactionLists.createFeeTypes(newList);
+                        angular.extend(resultTranslateList, translateList);
+                        return $http.get(mitigationUrl);
+                    })
+                    .then(function (response) {
+                        //PROCESS mitigation url list data
+                        var newList = _createSortedArray(response.data, options.key);
+                        TransactionLists.createMitigationList(newList);
+                        //angular.extend(resultTranslateList, translateList);
                         return response.data;
                     })
+
+
                     .catch(function (error) {
                         // this catches errors from the $http calls as well as from the explicit throw
                         console.warn("An error occurred with transaction List Load: " + error.status);
@@ -49,6 +71,7 @@
                     });
                 return deferred.promise;
             };
+
 
             /**
              * Creates the list of key value pairs for the translate service. Converts the complex json
@@ -104,7 +127,7 @@
                     else {
                         result.push(sortedObject);
                     }
-                    ;
+
                 });
                 if (usaRecord) result.unshift(usaRecord);
                 if (canadaRecord) result.unshift(canadaRecord);
